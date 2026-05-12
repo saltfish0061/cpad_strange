@@ -1,0 +1,13 @@
+# XAMPP / PHP / Composer
+/vendor/
+*.log
+.env
+config.php
+
+# IDEs
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+.DS_Store
