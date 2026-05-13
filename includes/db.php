@@ -2,7 +2,7 @@
 $host = "localhost";
 $username = "cpad";
 $password = "cpadPassword";
-$database = "cpad_03_Strange";
+$database = "cpad_03_strange";
 
 // Create connection
 $db_conn = new mysqli($host, $username, $password, $database);
