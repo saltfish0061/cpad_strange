@@ -39,7 +39,7 @@ CREATE TABLE `menus` (
 
 LOCK TABLES `menus` WRITE;
 /*!40000 ALTER TABLE `menus` DISABLE KEYS */;
-INSERT INTO `menus` VALUES ('D001','Jus Oren Ice','Chilled orange juice',5.90,'drink',1),('D002','Jus Carrot Ice','A refleshing and healthy drink made from freshly squeezed carrot juice',4.90,'drink',1),('D003','Jus Carrot Susu Ice','Chilled carrot juice with milk',5.40,'drink',1),('D004','Jus Tembikai Ice','Chilled watermelon juice',5.90,'drink',1),('D005','Jus Tembikai Susu Ice','Chilled watermelon juice with milk',6.40,'drink',1),('F001','Ayam Geprek Sambal Merah','Ayam geprek with spicy red hot chili',11.20,'food',1),('F002','Ayam Geprek Sambal Hijau','Ayam geprek with mild-spicy green chili',11.20,'food',1),('F003','Ayam Geprek Sambal Brown Sugar','Ayam geprek with sweet & spicy taste',11.20,'food',1),('F004','Ayam Geprek Sambal Harimau','Ayam geprek with sliced chili topping',11.20,'food',1),('F005','Ayam Geprek Sambal Bawean','Sensasi sambal terasi khas indonesia yang super pedas dan padu!',11.20,'food',1),('F006','Ayam Geprek Sambal 2 Rasa','Ayam Geprek with 2 choices of sambal',11.70,'food',1),('F007','Ayam Geprek Sambal 3 Rasa','Ayam Geprek with 3 choices of sambal',12.20,'food',1);
+INSERT INTO `menus` VALUES ('D001','Jus Oren Ice','Chilled orange juice',5.90,'drink',1),('D002','Jus Carrot Ice','freshly squeezed carrot juice',4.90,'drink',1),('D003','Jus Carrot Susu Ice','Chilled carrot juice with milk',5.40,'drink',1),('D004','Jus Tembikai Ice','Chilled watermelon juice',5.90,'drink',1),('D005','Jus Tembikai Susu Ice','Chilled watermelon juice with milk',6.40,'drink',1),('F001','Ayam Geprek Sambal Merah','Ayam geprek with spicy red hot chili',11.20,'food',1),('F002','Ayam Geprek Sambal Hijau','Ayam geprek with mild-spicy green chili',11.20,'food',1),('F003','Ayam Geprek Sambal Brown Sugar','Ayam geprek with sweet & spicy taste',11.20,'food',1),('F004','Ayam Geprek Sambal Harimau','Ayam geprek with sliced chili topping',11.20,'food',1),('F005','Ayam Geprek Sambal Bawean','Ayam Geprek with authentic Indonesian shrimp paste sambal',11.20,'food',1),('F006','Ayam Geprek Sambal 2 Rasa','Ayam Geprek with 2 choices of sambal',11.70,'food',1),('F007','Ayam Geprek Sambal 3 Rasa','Ayam Geprek with 3 choices of sambal',12.20,'food',1);
 /*!40000 ALTER TABLE `menus` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -139,4 +139,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-05-13 20:37:29
+-- Dump completed on 2026-05-15 13:41:12
