@@ -11,3 +11,6 @@ config.php
 # OS
 Thumbs.db
 .DS_Store
+
+# Documents
+"System functionalities.pdf"

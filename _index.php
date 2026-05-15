@@ -1,8 +1,4 @@
 <?php
-/*
-session_start();
-
-header("Location: views/home.php");
+header("Location: src/menu.php");
 exit(); 
-*/
 ?>
