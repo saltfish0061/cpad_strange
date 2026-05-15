@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Profile Management</title>
+
+  <style>
+
+    body{
+      font-family:"Times New Roman";
+      background:#f5f5f5;
+      padding:40px;
+    }
+
+    .container{
+      width:600px;
+      margin:auto;
+      background:white;
+      border:2px solid #555;
+      padding:30px;
+    }
+
+    h1{
+      text-align:center;
+      margin-bottom:30px;
+    }
+
+    .input-group{
+      margin-bottom:20px;
+    }
+
+    label{
+      display:block;
+      margin-bottom:8px;
+      font-size:20px;
+      font-weight:bold;
+    }
+
+    input{
+      width:100%;
+      padding:12px;
+      border:2px solid #555;
+      font-size:18px;
+    }
+
+    button{
+      width:100%;
+      padding:15px;
+      border:2px solid #555;
+      background:white;
+      font-size:20px;
+      cursor:pointer;
+    }
+
+    button:hover{
+      background:#eaeaea;
+    }
+
+    #message{
+      margin-top:20px;
+      text-align:center;
+      font-weight:bold;
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <div class="container">
+
+    <h1>Profile Management</h1>
+
+    <form id="profileForm">
+
+      <div class="input-group">
+        <label>Full Name</label>
+        <input type="text" value="Lutfi Haziq">
+      </div>
+
+      <div class="input-group">
+        <label>Email Address</label>
+        <input type="email" value="lutfi@gmail.com">
+      </div>
+
+      <div class="input-group">
+        <label>Phone Number</label>
+        <input type="text" value="0123456789">
+      </div>
+
+      <div class="input-group">
+        <label>New Password</label>
+        <input type="password">
+      </div>
+
+      <button type="submit">Update Profile</button>
+
+    </form>
+
+    <div id="message"></div>
+
+  </div>
+
+  <script>
+
+    document.getElementById("profileForm")
+    .addEventListener("submit", function(event){
+
+      event.preventDefault();
+
+      document.getElementById("message")
+      .innerHTML = "Profile Updated Successfully.";
+
+    });
+
+  </script>
+
+</body>
+</html>

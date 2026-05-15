@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>User Logout</title>
+
+  <style>
+
+    body{
+      font-family:"Times New Roman";
+      background:#f5f5f5;
+      padding:40px;
+    }
+
+    .container{
+      width:500px;
+      margin:auto;
+      background:white;
+      border:2px solid #555;
+      padding:40px;
+      text-align:center;
+    }
+
+    h1{
+      margin-bottom:30px;
+    }
+
+    button{
+      width:100%;
+      padding:15px;
+      border:2px solid #555;
+      background:white;
+      font-size:20px;
+      cursor:pointer;
+    }
+
+    button:hover{
+      background:#eaeaea;
+    }
+
+    #message{
+      margin-top:20px;
+      font-weight:bold;
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <div class="container">
+
+    <h1>User Logout</h1>
+
+    <p style="font-size:20px; margin-bottom:20px;">
+      Click button below to logout.
+    </p>
+
+    <button onclick="logoutSystem()">
+      Logout
+    </button>
+
+    <div id="message"></div>
+
+  </div>
+
+  <script>
+
+    function logoutSystem(){
+
+      document.getElementById("message")
+      .innerHTML = "Logout Successful.";
+
+    }
+
+  </script>
+
+</body>
+</html>
