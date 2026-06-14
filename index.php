@@ -1069,6 +1069,428 @@
       color: var(--muted);
     }
 
+    .vendor-command {
+      width: min(1500px, 88vw);
+      padding: 34px 0 72px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .vendor-command h1,
+    .vendor-command h2,
+    .vendor-command h3,
+    .vendor-command strong {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+
+    .vendor-hero-panel {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 24px;
+      align-items: center;
+      min-height: 220px;
+      margin-bottom: 18px;
+      padding: 30px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 212, 71, 0.28);
+      border-radius: 8px;
+      background:
+        radial-gradient(circle at 87% 18%, rgba(255, 212, 71, 0.36), transparent 22%),
+        linear-gradient(135deg, #42110c 0%, #8f2519 54%, #d14a24 100%);
+      color: var(--white);
+      box-shadow: 0 22px 48px rgba(67, 17, 13, 0.2);
+    }
+
+    .vendor-hero-panel::before {
+      position: absolute;
+      inset: 0;
+      content: "";
+      opacity: 0.14;
+      background-image: url("data:image/svg+xml,%3Csvg width='560' height='260' viewBox='0 0 560 260' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='white' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M42 168 C78 98 148 72 218 112 C188 188 101 212 42 168Z'/%3E%3Cpath d='M84 158 C128 138 170 122 218 112'/%3E%3Cpath d='M322 64 C386 18 480 36 512 110 C548 194 440 238 364 184 C304 142 284 94 322 64Z'/%3E%3Cpath d='M352 104 C394 90 450 104 494 142'/%3E%3Cpath d='M174 36 C196 60 202 88 190 120'/%3E%3Cpath d='M256 210 C310 174 382 178 430 220'/%3E%3C/g%3E%3C/svg%3E");
+      background-size: 560px 260px;
+    }
+
+    .vendor-hero-copy,
+    .vendor-hero-actions {
+      position: relative;
+      z-index: 1;
+    }
+
+    .vendor-hero-copy .eyebrow {
+      color: var(--yellow);
+    }
+
+    .vendor-hero-copy h1 {
+      max-width: 780px;
+      margin: 0;
+      font-size: clamp(36px, 5vw, 64px);
+      line-height: 0.95;
+    }
+
+    .vendor-hero-copy p:not(.eyebrow) {
+      max-width: 700px;
+      margin: 14px 0 0;
+      color: rgba(255, 255, 255, 0.84);
+      line-height: 1.6;
+    }
+
+    .vendor-hero-actions {
+      display: grid;
+      justify-items: end;
+      gap: 12px;
+    }
+
+    .vendor-refresh {
+      min-height: 44px;
+      padding: 0 18px;
+      border: 1px solid rgba(255, 255, 255, 0.48);
+      border-radius: 999px;
+      background: var(--yellow);
+      color: #241100;
+      cursor: pointer;
+      font-weight: 900;
+      box-shadow: 0 14px 24px rgba(0, 0, 0, 0.18);
+      transition: transform 180ms ease, box-shadow 180ms ease;
+    }
+
+    .vendor-refresh:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 18px 28px rgba(0, 0, 0, 0.24);
+    }
+
+    .vendor-live-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 32px;
+      padding: 6px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.26);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .vendor-live-pill::before {
+      width: 8px;
+      height: 8px;
+      content: "";
+      background: #6ee78a;
+      border-radius: 50%;
+      box-shadow: 0 0 0 4px rgba(110, 231, 138, 0.16);
+    }
+
+    .vendor-workspace {
+      display: grid;
+      grid-template-columns: 240px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .vendor-rail {
+      position: sticky;
+      top: 94px;
+      display: grid;
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid rgba(232, 227, 218, 0.9);
+      border-radius: 8px;
+      background: #fffaf2;
+      box-shadow: 0 14px 34px rgba(67, 17, 13, 0.08);
+    }
+
+    .vendor-tab {
+      justify-content: flex-start;
+      width: 100%;
+      min-height: 58px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      text-align: left;
+    }
+
+    .vendor-tab-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .vendor-tab-note {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .vendor-tab.active {
+      border-color: transparent;
+      background: linear-gradient(135deg, var(--green-900), var(--green-700));
+      color: var(--white);
+      box-shadow: 0 14px 24px rgba(122, 31, 22, 0.2);
+    }
+
+    .vendor-tab.active .vendor-tab-note {
+      color: rgba(255, 255, 255, 0.78);
+    }
+
+    .vendor-main {
+      min-width: 0;
+    }
+
+    .vendor-grid {
+      grid-template-columns: repeat(4, minmax(170px, 1fr));
+    }
+
+    .metric-card {
+      position: relative;
+      min-height: 132px;
+      padding: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(232, 227, 218, 0.9);
+      border-radius: 8px;
+      background: linear-gradient(180deg, #ffffff, #fffaf2);
+    }
+
+    .metric-card::after {
+      position: absolute;
+      right: -28px;
+      bottom: -36px;
+      width: 118px;
+      height: 118px;
+      content: "";
+      border-radius: 38% 62% 48% 52%;
+      background: rgba(255, 212, 71, 0.28);
+    }
+
+    .metric-card.hot::after {
+      background: rgba(217, 59, 34, 0.18);
+    }
+
+    .metric-card.green::after {
+      background: rgba(47, 111, 67, 0.18);
+    }
+
+    .metric-card strong {
+      position: relative;
+      z-index: 1;
+      font-size: clamp(30px, 3vw, 42px);
+      line-height: 1;
+    }
+
+    .metric-card span,
+    .metric-mini {
+      position: relative;
+      z-index: 1;
+    }
+
+    .metric-mini {
+      display: inline-block;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .vendor-split {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.55fr);
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .vendor-panel {
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.96);
+      box-shadow: 0 16px 38px rgba(67, 17, 13, 0.08);
+    }
+
+    .vendor-panel-head {
+      min-height: 74px;
+      background: linear-gradient(180deg, #fffdf8, #ffffff);
+    }
+
+    .vendor-panel-head h2 {
+      font-size: 24px;
+    }
+
+    .vendor-panel-subtitle {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .queue-list,
+    .popular-list {
+      display: grid;
+      gap: 10px;
+      padding: 16px;
+    }
+
+    .queue-row,
+    .popular-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fffaf2;
+    }
+
+    .queue-row strong,
+    .popular-row strong {
+      display: block;
+      font-size: 14px;
+    }
+
+    .queue-row span,
+    .popular-row span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .queue-count {
+      display: grid;
+      place-items: center;
+      min-width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--green-900);
+      color: var(--white);
+      font-weight: 900;
+    }
+
+    .vendor-table th {
+      background: #fffaf2;
+      color: #55686b;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+    }
+
+    .vendor-table td {
+      font-size: 14px;
+    }
+
+    .vendor-table tbody tr {
+      transition: background-color 160ms ease;
+    }
+
+    .vendor-table tbody tr:hover {
+      background: #fffaf2;
+    }
+
+    .status-pill {
+      min-height: 28px;
+      padding: 5px 11px;
+      border: 1px solid transparent;
+      font-size: 11px;
+      letter-spacing: 0.02em;
+    }
+
+    .status-pill.pending {
+      border-color: #f4d774;
+      background: #fff1b8;
+      color: #684300;
+    }
+
+    .status-pill.preparing {
+      border-color: #ffc4a6;
+      background: #ffe4d3;
+      color: #8f2a0c;
+    }
+
+    .order-detail {
+      margin-bottom: 16px;
+      border: 1px solid rgba(255, 212, 71, 0.46);
+      border-radius: 8px;
+      background: linear-gradient(135deg, #fff7de, #fffaf2);
+    }
+
+    .order-detail-list {
+      display: grid;
+      gap: 8px;
+      margin: 14px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .order-detail-list li {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.74);
+    }
+
+    .vendor-form {
+      background:
+        radial-gradient(circle at 92% 18%, rgba(255, 212, 71, 0.16), transparent 18%),
+        #fffaf2;
+    }
+
+    .vendor-form label {
+      color: #526568;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .vendor-input,
+    .vendor-select,
+    .vendor-textarea {
+      border-color: #dfd5c5;
+      background: #fffdf8;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-weight: 700;
+    }
+
+    .vendor-input:focus,
+    .vendor-select:focus,
+    .vendor-textarea:focus {
+      outline: 3px solid rgba(255, 212, 71, 0.28);
+      border-color: var(--green-700);
+    }
+
+    .small-action,
+    .danger-action {
+      border-radius: 8px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 13px;
+    }
+
+    .small-action.primary {
+      background: linear-gradient(135deg, var(--green-900), var(--green-700));
+    }
+
+    .danger-action {
+      background: #fff8f6;
+    }
+
+    .popular-bar {
+      position: relative;
+      height: 8px;
+      margin-top: 8px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #f2e7d8;
+    }
+
+    .popular-bar span {
+      display: block;
+      height: 100%;
+      min-width: 8%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--green-900), var(--orange), var(--yellow));
+    }
+
     .footer {
       padding: 30px 6vw;
       color: rgba(255, 255, 255, 0.8);
@@ -1122,6 +1544,21 @@
         overflow-x: auto;
       }
 
+      .vendor-hero-panel,
+      .vendor-workspace,
+      .vendor-split {
+        grid-template-columns: 1fr;
+      }
+
+      .vendor-hero-actions {
+        justify-items: start;
+      }
+
+      .vendor-rail {
+        position: static;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
       .promo.red {
         min-height: 210px;
       }
@@ -1156,6 +1593,25 @@
 
       .vendor-form {
         grid-template-columns: 1fr;
+      }
+
+      .vendor-command {
+        width: min(100% - 28px, 1180px);
+        padding-top: 22px;
+      }
+
+      .vendor-hero-panel {
+        padding: 22px;
+      }
+
+      .vendor-rail {
+        grid-template-columns: 1fr;
+      }
+
+      .vendor-panel-head,
+      .order-detail-list li {
+        align-items: flex-start;
+        flex-direction: column;
       }
 
       .tile-food,
@@ -1483,6 +1939,13 @@
 
         const pendingOrders = computed(() => vendorOrders.value.filter((order) => order.status !== 'completed' && order.status !== 'cancelled'));
         const availableCount = computed(() => vendorMenu.value.filter((item) => Number(item.is_available)).length);
+        const soldOutCount = computed(() => vendorMenu.value.filter((item) => !Number(item.is_available)).length);
+        const orderCountByStatus = (status) => vendorOrders.value.filter((order) => order.status === status).length;
+        const popularBarWidth = (item) => {
+          const quantities = vendorSales.value.popular_items.map((popularItem) => Number(popularItem.total_quantity || 0));
+          const maxQuantity = Math.max(1, ...quantities);
+          return `${Math.max(10, (Number(item.total_quantity || 0) / maxQuantity) * 100)}%`;
+        };
 
         return {
           addPreviewItem,
@@ -1496,7 +1959,9 @@
           loadVendorData,
           menuForm,
           navItems,
+          orderCountByStatus,
           pendingOrders,
+          popularBarWidth,
           previewItems,
           resetMenuForm,
           route,
@@ -1504,6 +1969,7 @@
           saveMenuItem,
           selectedOrder,
           selectedOrderItems,
+          soldOutCount,
           toggleAvailability,
           updateOrderStatus,
           vendorLoading,
@@ -1682,236 +2148,317 @@
             </section>
           </template>
 
-          <section v-else-if="route === 'vendor'" class="page vendor-page">
-            <div class="vendor-header">
-              <div>
+          <section v-else-if="route === 'vendor'" class="page vendor-command">
+            <div class="vendor-hero-panel">
+              <div class="vendor-hero-copy">
                 <p class="eyebrow">Vendor module</p>
-                <h1>Vendor Dashboard</h1>
-                <p>Manage menu availability, update incoming orders, and review completed sales records.</p>
+                <h1>Vendor Command Center</h1>
+                <p>Track the queue, switch menu items on or off, and keep completed sales visible without leaving the counter.</p>
               </div>
-              <button class="pill-button primary" type="button" @click="loadVendorData">
-                {{ vendorLoading ? 'Refreshing...' : 'Refresh Data' }}
-              </button>
+              <div class="vendor-hero-actions">
+                <span class="vendor-live-pill">{{ pendingOrders.length }} active orders</span>
+                <button class="vendor-refresh" type="button" @click="loadVendorData">
+                  {{ vendorLoading ? 'Refreshing...' : 'Refresh Data' }}
+                </button>
+              </div>
             </div>
 
-            <p v-if="vendorMessage" class="vendor-alert">{{ vendorMessage }}</p>
+            <div class="vendor-workspace">
+              <aside class="vendor-rail" aria-label="Vendor sections">
+                <button class="vendor-tab" :class="{ active: vendorTab === 'dashboard' }" type="button" @click="vendorTab = 'dashboard'">
+                  <span class="vendor-tab-label">Dashboard</span>
+                  <span class="vendor-tab-note">Live queue</span>
+                </button>
+                <button class="vendor-tab" :class="{ active: vendorTab === 'orders' }" type="button" @click="vendorTab = 'orders'">
+                  <span class="vendor-tab-label">Orders</span>
+                  <span class="vendor-tab-note">{{ vendorOrders.length }} records</span>
+                </button>
+                <button class="vendor-tab" :class="{ active: vendorTab === 'menu' }" type="button" @click="vendorTab = 'menu'">
+                  <span class="vendor-tab-label">Menu Items</span>
+                  <span class="vendor-tab-note">{{ availableCount }} available</span>
+                </button>
+                <button class="vendor-tab" :class="{ active: vendorTab === 'sales' }" type="button" @click="vendorTab = 'sales'">
+                  <span class="vendor-tab-label">Sales Records</span>
+                  <span class="vendor-tab-note">{{ formatMoney(vendorSales.summary.total_sales) }}</span>
+                </button>
+              </aside>
 
-            <div class="vendor-tabs" role="tablist" aria-label="Vendor sections">
-              <button class="vendor-tab" :class="{ active: vendorTab === 'dashboard' }" type="button" @click="vendorTab = 'dashboard'">Dashboard</button>
-              <button class="vendor-tab" :class="{ active: vendorTab === 'orders' }" type="button" @click="vendorTab = 'orders'">Orders</button>
-              <button class="vendor-tab" :class="{ active: vendorTab === 'menu' }" type="button" @click="vendorTab = 'menu'">Menu Items</button>
-              <button class="vendor-tab" :class="{ active: vendorTab === 'sales' }" type="button" @click="vendorTab = 'sales'">Sales Records</button>
-            </div>
+              <div class="vendor-main">
+                <p v-if="vendorMessage" class="vendor-alert">{{ vendorMessage }}</p>
 
-            <template v-if="vendorTab === 'dashboard'">
-              <div class="vendor-grid">
-                <article class="metric-card">
-                  <span>Open orders</span>
-                  <strong>{{ pendingOrders.length }}</strong>
-                </article>
-                <article class="metric-card">
-                  <span>Completed orders</span>
-                  <strong>{{ vendorSales.summary.completed_orders || 0 }}</strong>
-                </article>
-                <article class="metric-card">
-                  <span>Total sales</span>
-                  <strong>{{ formatMoney(vendorSales.summary.total_sales) }}</strong>
-                </article>
-                <article class="metric-card">
-                  <span>Available items</span>
-                  <strong>{{ availableCount }}</strong>
-                </article>
-              </div>
-
-              <div class="vendor-panel">
-                <div class="vendor-panel-head">
-                  <h2>Incoming Orders</h2>
-                  <button class="small-action" type="button" @click="vendorTab = 'orders'">View All</button>
-                </div>
-                <table class="vendor-table">
-                  <thead>
-                    <tr>
-                      <th>Order</th>
-                      <th>Customer</th>
-                      <th>Total</th>
-                      <th>Status</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="order in pendingOrders.slice(0, 6)" :key="order.order_id">
-                      <td>{{ order.order_id }}</td>
-                      <td>{{ order.customer_name }}</td>
-                      <td>{{ formatMoney(order.total_amount) }}</td>
-                      <td><span class="status-pill" :class="order.status">{{ order.status }}</span></td>
-                      <td><button class="small-action" type="button" @click="viewOrder(order)">Details</button></td>
-                    </tr>
-                    <tr v-if="pendingOrders.length === 0">
-                      <td colspan="5" class="muted-text">No active orders right now.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </template>
-
-            <template v-if="vendorTab === 'orders'">
-              <div v-if="selectedOrder" class="order-detail">
-                <h3>Order {{ selectedOrder.order_id }} · {{ selectedOrder.customer_name }}</h3>
-                <p class="muted-text">{{ selectedOrder.customer_phone }} · {{ formatMoney(selectedOrder.total_amount) }}</p>
-                <ul>
-                  <li v-for="item in selectedOrderItems" :key="item.order_item_id">
-                    {{ item.quantity }}x {{ item.name }} - {{ formatMoney(item.subtotal) }}
-                  </li>
-                </ul>
-              </div>
-
-              <div class="vendor-panel">
-                <div class="vendor-panel-head">
-                  <h2>Order Dashboard</h2>
-                  <span class="muted-text">{{ vendorOrders.length }} orders</span>
-                </div>
-                <table class="vendor-table">
-                  <thead>
-                    <tr>
-                      <th>Order</th>
-                      <th>Customer</th>
-                      <th>Phone</th>
-                      <th>Items</th>
-                      <th>Total</th>
-                      <th>Status</th>
-                      <th>Update</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="order in vendorOrders" :key="order.order_id">
-                      <td><button class="small-action" type="button" @click="viewOrder(order)">{{ order.order_id }}</button></td>
-                      <td>{{ order.customer_name }}</td>
-                      <td>{{ order.customer_phone }}</td>
-                      <td>{{ order.item_count }}</td>
-                      <td>{{ formatMoney(order.total_amount) }}</td>
-                      <td><span class="status-pill" :class="order.status">{{ order.status }}</span></td>
-                      <td>
-                        <select class="vendor-select" :value="order.status" @change="updateOrderStatus(order, $event.target.value)">
-                          <option value="pending">pending</option>
-                          <option value="preparing">preparing</option>
-                          <option value="ready">ready</option>
-                          <option value="completed">completed</option>
-                          <option value="cancelled">cancelled</option>
-                        </select>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </template>
-
-            <template v-if="vendorTab === 'menu'">
-              <div class="vendor-panel">
-                <div class="vendor-panel-head">
-                  <h2>{{ editingItemId ? 'Update Menu Item' : 'Add Menu Item' }}</h2>
-                  <button v-if="editingItemId" class="small-action" type="button" @click="resetMenuForm">Cancel Edit</button>
-                </div>
-                <form class="vendor-form" @submit.prevent="saveMenuItem">
-                  <label>
-                    Name
-                    <input class="vendor-input" v-model="menuForm.name" required>
-                  </label>
-                  <label>
-                    Price
-                    <input class="vendor-input" v-model="menuForm.price" type="number" min="0.01" step="0.01" required>
-                  </label>
-                  <label>
-                    Category
-                    <select class="vendor-select" v-model="menuForm.category" required>
-                      <option value="food">food</option>
-                      <option value="drink">drink</option>
-                    </select>
-                  </label>
-                  <label class="wide">
-                    Description
-                    <textarea class="vendor-textarea" v-model="menuForm.description"></textarea>
-                  </label>
-                  <div class="inline-actions wide">
-                    <button class="small-action primary" type="submit">{{ editingItemId ? 'Save Changes' : 'Add Item' }}</button>
-                    <button class="small-action" type="button" @click="resetMenuForm">Clear</button>
+                <template v-if="vendorTab === 'dashboard'">
+                  <div class="vendor-grid">
+                    <article class="metric-card hot">
+                      <span>Open orders</span>
+                      <strong>{{ pendingOrders.length }}</strong>
+                      <em class="metric-mini">Needs attention</em>
+                    </article>
+                    <article class="metric-card">
+                      <span>Completed orders</span>
+                      <strong>{{ vendorSales.summary.completed_orders || 0 }}</strong>
+                      <em class="metric-mini">Closed tickets</em>
+                    </article>
+                    <article class="metric-card green">
+                      <span>Total sales</span>
+                      <strong>{{ formatMoney(vendorSales.summary.total_sales) }}</strong>
+                      <em class="metric-mini">Completed only</em>
+                    </article>
+                    <article class="metric-card">
+                      <span>Menu health</span>
+                      <strong>{{ availableCount }}</strong>
+                      <em class="metric-mini">{{ soldOutCount }} sold out</em>
+                    </article>
                   </div>
-                </form>
 
-                <table class="vendor-table">
-                  <thead>
-                    <tr>
-                      <th>Item</th>
-                      <th>Category</th>
-                      <th>Price</th>
-                      <th>Availability</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="item in vendorMenu" :key="item.item_id">
-                      <td>
-                        <strong>{{ item.name }}</strong>
-                        <div class="muted-text">{{ item.item_id }}</div>
-                      </td>
-                      <td>{{ item.category }}</td>
-                      <td>{{ formatMoney(item.price) }}</td>
-                      <td>
-                        <span class="status-pill" :class="Number(item.is_available) ? 'available' : 'sold-out'">
-                          {{ Number(item.is_available) ? 'available' : 'sold out' }}
-                        </span>
-                      </td>
-                      <td>
-                        <div class="inline-actions">
-                          <button class="small-action" type="button" @click="editMenuItem(item)">Edit</button>
-                          <button class="small-action" type="button" @click="toggleAvailability(item)">
-                            {{ Number(item.is_available) ? 'Sold Out' : 'Available' }}
-                          </button>
-                          <button class="danger-action" type="button" @click="deleteMenuItem(item)">Delete</button>
+                  <div class="vendor-split">
+                    <div class="vendor-panel">
+                      <div class="vendor-panel-head">
+                        <div>
+                          <h2>Incoming Orders</h2>
+                          <span class="vendor-panel-subtitle">Latest active tickets</span>
                         </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </template>
+                        <button class="small-action primary" type="button" @click="vendorTab = 'orders'">View All</button>
+                      </div>
+                      <table class="vendor-table">
+                        <thead>
+                          <tr>
+                            <th>Order</th>
+                            <th>Customer</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr v-for="order in pendingOrders.slice(0, 6)" :key="order.order_id">
+                            <td><strong>{{ order.order_id }}</strong></td>
+                            <td>{{ order.customer_name }}</td>
+                            <td>{{ formatMoney(order.total_amount) }}</td>
+                            <td><span class="status-pill" :class="order.status">{{ order.status }}</span></td>
+                            <td><button class="small-action" type="button" @click="viewOrder(order)">Details</button></td>
+                          </tr>
+                          <tr v-if="pendingOrders.length === 0">
+                            <td colspan="5" class="muted-text">No active orders right now.</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
 
-            <template v-if="vendorTab === 'sales'">
-              <div class="vendor-grid">
-                <article class="metric-card">
-                  <span>Completed orders</span>
-                  <strong>{{ vendorSales.summary.completed_orders || 0 }}</strong>
-                </article>
-                <article class="metric-card">
-                  <span>Total completed sales</span>
-                  <strong>{{ formatMoney(vendorSales.summary.total_sales) }}</strong>
-                </article>
-              </div>
+                    <div class="vendor-panel">
+                      <div class="vendor-panel-head">
+                        <div>
+                          <h2>Status Queue</h2>
+                          <span class="vendor-panel-subtitle">Kitchen flow</span>
+                        </div>
+                      </div>
+                      <div class="queue-list">
+                        <div class="queue-row">
+                          <div>
+                            <strong>Pending</strong>
+                            <span>Waiting to prepare</span>
+                          </div>
+                          <b class="queue-count">{{ orderCountByStatus('pending') }}</b>
+                        </div>
+                        <div class="queue-row">
+                          <div>
+                            <strong>Preparing</strong>
+                            <span>Currently cooking</span>
+                          </div>
+                          <b class="queue-count">{{ orderCountByStatus('preparing') }}</b>
+                        </div>
+                        <div class="queue-row">
+                          <div>
+                            <strong>Ready</strong>
+                            <span>Ready for pickup</span>
+                          </div>
+                          <b class="queue-count">{{ orderCountByStatus('ready') }}</b>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </template>
 
-              <div class="vendor-panel">
-                <div class="vendor-panel-head">
-                  <h2>Popular Items</h2>
-                  <span class="muted-text">Completed orders only</span>
-                </div>
-                <table class="vendor-table">
-                  <thead>
-                    <tr>
-                      <th>Item</th>
-                      <th>Category</th>
-                      <th>Quantity Sold</th>
-                      <th>Sales</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="item in vendorSales.popular_items" :key="item.item_id">
-                      <td>{{ item.name }}</td>
-                      <td>{{ item.category }}</td>
-                      <td>{{ item.total_quantity }}</td>
-                      <td>{{ formatMoney(item.total_sales) }}</td>
-                    </tr>
-                  </tbody>
-                </table>
+                <template v-if="vendorTab === 'orders'">
+                  <div v-if="selectedOrder" class="order-detail">
+                    <h3>Order {{ selectedOrder.order_id }} - {{ selectedOrder.customer_name }}</h3>
+                    <p class="muted-text">{{ selectedOrder.customer_phone }} - {{ formatMoney(selectedOrder.total_amount) }}</p>
+                    <ul class="order-detail-list">
+                      <li v-for="item in selectedOrderItems" :key="item.order_item_id">
+                        <span>{{ item.quantity }}x {{ item.name }}</span>
+                        <strong>{{ formatMoney(item.subtotal) }}</strong>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div class="vendor-panel">
+                    <div class="vendor-panel-head">
+                      <div>
+                        <h2>Order Dashboard</h2>
+                        <span class="vendor-panel-subtitle">{{ vendorOrders.length }} total orders</span>
+                      </div>
+                    </div>
+                    <table class="vendor-table">
+                      <thead>
+                        <tr>
+                          <th>Order</th>
+                          <th>Customer</th>
+                          <th>Phone</th>
+                          <th>Items</th>
+                          <th>Total</th>
+                          <th>Status</th>
+                          <th>Update</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="order in vendorOrders" :key="order.order_id">
+                          <td><button class="small-action" type="button" @click="viewOrder(order)">{{ order.order_id }}</button></td>
+                          <td>{{ order.customer_name }}</td>
+                          <td>{{ order.customer_phone }}</td>
+                          <td>{{ order.item_count }}</td>
+                          <td>{{ formatMoney(order.total_amount) }}</td>
+                          <td><span class="status-pill" :class="order.status">{{ order.status }}</span></td>
+                          <td>
+                            <select class="vendor-select" :value="order.status" @change="updateOrderStatus(order, $event.target.value)">
+                              <option value="pending">pending</option>
+                              <option value="preparing">preparing</option>
+                              <option value="ready">ready</option>
+                              <option value="completed">completed</option>
+                              <option value="cancelled">cancelled</option>
+                            </select>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </template>
+
+                <template v-if="vendorTab === 'menu'">
+                  <div class="vendor-panel">
+                    <div class="vendor-panel-head">
+                      <div>
+                        <h2>{{ editingItemId ? 'Update Menu Item' : 'Add Menu Item' }}</h2>
+                        <span class="vendor-panel-subtitle">{{ availableCount }} available - {{ soldOutCount }} sold out</span>
+                      </div>
+                      <button v-if="editingItemId" class="small-action" type="button" @click="resetMenuForm">Cancel Edit</button>
+                    </div>
+                    <form class="vendor-form" @submit.prevent="saveMenuItem">
+                      <label>
+                        Name
+                        <input class="vendor-input" v-model="menuForm.name" required>
+                      </label>
+                      <label>
+                        Price
+                        <input class="vendor-input" v-model="menuForm.price" type="number" min="0.01" step="0.01" required>
+                      </label>
+                      <label>
+                        Category
+                        <select class="vendor-select" v-model="menuForm.category" required>
+                          <option value="food">food</option>
+                          <option value="drink">drink</option>
+                        </select>
+                      </label>
+                      <label class="wide">
+                        Description
+                        <textarea class="vendor-textarea" v-model="menuForm.description"></textarea>
+                      </label>
+                      <div class="inline-actions wide">
+                        <button class="small-action primary" type="submit">{{ editingItemId ? 'Save Changes' : 'Add Item' }}</button>
+                        <button class="small-action" type="button" @click="resetMenuForm">Clear</button>
+                      </div>
+                    </form>
+
+                    <table class="vendor-table">
+                      <thead>
+                        <tr>
+                          <th>Item</th>
+                          <th>Category</th>
+                          <th>Price</th>
+                          <th>Availability</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="item in vendorMenu" :key="item.item_id">
+                          <td>
+                            <strong>{{ item.name }}</strong>
+                            <div class="muted-text">{{ item.item_id }}</div>
+                          </td>
+                          <td>{{ item.category }}</td>
+                          <td>{{ formatMoney(item.price) }}</td>
+                          <td>
+                            <span class="status-pill" :class="Number(item.is_available) ? 'available' : 'sold-out'">
+                              {{ Number(item.is_available) ? 'available' : 'sold out' }}
+                            </span>
+                          </td>
+                          <td>
+                            <div class="inline-actions">
+                              <button class="small-action" type="button" @click="editMenuItem(item)">Edit</button>
+                              <button class="small-action" type="button" @click="toggleAvailability(item)">
+                                {{ Number(item.is_available) ? 'Sold Out' : 'Available' }}
+                              </button>
+                              <button class="danger-action" type="button" @click="deleteMenuItem(item)">Delete</button>
+                            </div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </template>
+
+                <template v-if="vendorTab === 'sales'">
+                  <div class="vendor-grid">
+                    <article class="metric-card green">
+                      <span>Completed orders</span>
+                      <strong>{{ vendorSales.summary.completed_orders || 0 }}</strong>
+                      <em class="metric-mini">Recorded sales</em>
+                    </article>
+                    <article class="metric-card hot">
+                      <span>Total completed sales</span>
+                      <strong>{{ formatMoney(vendorSales.summary.total_sales) }}</strong>
+                      <em class="metric-mini">Revenue snapshot</em>
+                    </article>
+                  </div>
+
+                  <div class="vendor-split">
+                    <div class="vendor-panel">
+                      <div class="vendor-panel-head">
+                        <div>
+                          <h2>Popular Items</h2>
+                          <span class="vendor-panel-subtitle">Completed orders only</span>
+                        </div>
+                      </div>
+                      <div class="popular-list">
+                        <div class="popular-row" v-for="item in vendorSales.popular_items" :key="item.item_id">
+                          <div>
+                            <strong>{{ item.name }}</strong>
+                            <span>{{ item.category }} - {{ item.total_quantity }} sold - {{ formatMoney(item.total_sales) }}</span>
+                            <div class="popular-bar"><span :style="{ width: popularBarWidth(item) }"></span></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="vendor-panel">
+                      <div class="vendor-panel-head">
+                        <div>
+                          <h2>Status Mix</h2>
+                          <span class="vendor-panel-subtitle">All order records</span>
+                        </div>
+                      </div>
+                      <div class="queue-list">
+                        <div class="queue-row" v-for="status in vendorSales.status_counts" :key="status.status">
+                          <div>
+                            <strong>{{ status.status }}</strong>
+                            <span>orders</span>
+                          </div>
+                          <b class="queue-count">{{ status.total }}</b>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </template>
               </div>
-            </template>
+            </div>
           </section>
 
           <section v-else class="page route-panel">
