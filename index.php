@@ -480,6 +480,7 @@
       justify-content: space-between;
       gap: 24px;
       margin-bottom: 24px;
+      z-index: 4;
     }
 
     .section-head h2 {
@@ -750,7 +751,7 @@
       height: 190px;
       object-fit: cover;
       background: radial-gradient(circle at 76% 16%, rgba(255, 212, 71, 0.28), transparent 24%),
-                  linear-gradient(215deg, var(--sambal-dark) 40%, var(--green-900) 68%, var(--green-700));
+        linear-gradient(215deg, var(--sambal-dark) 40%, var(--green-900) 68%, var(--green-700));
     }
 
     .food-card-body {
@@ -828,6 +829,246 @@
       flex-wrap: wrap;
     }
 
+    .vendor-page {
+      padding: 42px 0 70px;
+    }
+
+    .vendor-header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+
+    .vendor-header h1 {
+      margin: 0;
+      font-size: clamp(34px, 5vw, 56px);
+      line-height: 1;
+    }
+
+    .vendor-header p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .vendor-tabs {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 24px 0;
+    }
+
+    .vendor-tab,
+    .small-action,
+    .danger-action {
+      min-height: 38px;
+      padding: 9px 14px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--white);
+      color: var(--ink);
+      cursor: pointer;
+      font-weight: 800;
+      transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+    }
+
+    .vendor-tab:hover,
+    .small-action:hover,
+    .danger-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 18px rgba(67, 17, 13, 0.12);
+    }
+
+    .vendor-tab.active,
+    .small-action.primary {
+      border-color: var(--green-900);
+      background: var(--green-900);
+      color: var(--white);
+    }
+
+    .danger-action {
+      border-color: #f0b6aa;
+      color: #9f2d1f;
+    }
+
+    .vendor-alert {
+      margin: 0 0 16px;
+      padding: 12px 14px;
+      border: 1px solid #f3c05c;
+      border-radius: 8px;
+      background: #fff3c0;
+      color: #5a3004;
+      font-weight: 700;
+    }
+
+    .vendor-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .metric-card,
+    .vendor-panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--white);
+      box-shadow: 0 12px 28px rgba(42, 48, 43, 0.08);
+    }
+
+    .metric-card {
+      padding: 18px;
+    }
+
+    .metric-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .metric-card strong {
+      display: block;
+      margin-top: 10px;
+      font-size: 30px;
+    }
+
+    .vendor-panel {
+      margin-top: 16px;
+      overflow: hidden;
+    }
+
+    .vendor-panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .vendor-panel-head h2 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .vendor-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .vendor-table th,
+    .vendor-table td {
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    .vendor-table th {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #fff3c0;
+      color: #5a3004;
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: capitalize;
+    }
+
+    .status-pill.completed,
+    .status-pill.available {
+      background: #dff3df;
+      color: #21582f;
+    }
+
+    .status-pill.cancelled,
+    .status-pill.sold-out {
+      background: #ffe0d8;
+      color: #9f2d1f;
+    }
+
+    .status-pill.ready {
+      background: #dcecff;
+      color: #164b86;
+    }
+
+    .inline-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .vendor-select,
+    .vendor-input,
+    .vendor-textarea {
+      width: 100%;
+      min-height: 40px;
+      padding: 9px 11px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--white);
+      color: var(--ink);
+      font: inherit;
+    }
+
+    .vendor-textarea {
+      min-height: 84px;
+      resize: vertical;
+    }
+
+    .vendor-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 18px;
+      border-bottom: 1px solid var(--line);
+      background: #fffaf2;
+    }
+
+    .vendor-form label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .vendor-form .wide {
+      grid-column: 1 / -1;
+    }
+
+    .order-detail {
+      padding: 18px;
+      background: #fffaf2;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .order-detail h3 {
+      margin: 0 0 10px;
+    }
+
+    .order-detail ul {
+      margin: 10px 0 0;
+      padding-left: 18px;
+      line-height: 1.8;
+    }
+
+    .muted-text {
+      color: var(--muted);
+    }
+
     .footer {
       padding: 30px 6vw;
       color: rgba(255, 255, 255, 0.8);
@@ -866,8 +1107,19 @@
       }
 
       .promo-grid,
-      .card-grid {
+      .card-grid,
+      .vendor-grid {
         grid-template-columns: 1fr;
+      }
+
+      .vendor-header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .vendor-table {
+        display: block;
+        overflow-x: auto;
       }
 
       .promo.red {
@@ -900,6 +1152,10 @@
 
       .category-art {
         min-height: 560px;
+      }
+
+      .vendor-form {
+        grid-template-columns: 1fr;
       }
 
       .tile-food,
@@ -995,10 +1251,33 @@
       setup() {
         const route = ref('home');
         const cartCount = ref(0);
+        const apiBase = 'api';
+        const vendorTab = ref('dashboard');
+        const vendorLoading = ref(false);
+        const vendorMessage = ref('');
+        const vendorMenu = ref([]);
+        const vendorOrders = ref([]);
+        const vendorSales = ref({
+          summary: { completed_orders: 0, total_sales: 0 },
+          popular_items: [],
+          status_counts: []
+        });
+        const selectedOrder = ref(null);
+        const selectedOrderItems = ref([]);
+        const editingItemId = ref('');
+        const menuForm = ref({
+          name: '',
+          description: '',
+          price: '',
+          category: 'food'
+        });
 
         const updateRoute = () => {
           const nextRoute = window.location.hash.replace('#/', '') || 'home';
           route.value = routes[nextRoute] ? nextRoute : 'home';
+          if (route.value === 'vendor') {
+            loadVendorData();
+          }
         };
 
         onMounted(() => {
@@ -1038,14 +1317,202 @@
           cartCount.value += 1;
         };
 
+        const formatMoney = (value) => {
+          return `RM ${Number(value || 0).toFixed(2)}`;
+        };
+
+        const setVendorMessage = (message) => {
+          vendorMessage.value = message;
+          if (message) {
+            window.setTimeout(() => {
+              if (vendorMessage.value === message) {
+                vendorMessage.value = '';
+              }
+            }, 3600);
+          }
+        };
+
+        const apiRequest = async (path, options = {}) => {
+          const response = await fetch(`${apiBase}${path}`, {
+            headers: {
+              'Content-Type': 'application/json',
+              ...(options.headers || {})
+            },
+            ...options
+          });
+          const data = await response.json().catch(() => ({}));
+
+          if (!response.ok) {
+            const message = data.errors ? data.errors.join(' ') : (data.message || 'Request failed.');
+            throw new Error(message);
+          }
+
+          return data;
+        };
+
+        const loadVendorMenu = async () => {
+          const data = await apiRequest('/vendor/menu');
+          vendorMenu.value = data.items || [];
+        };
+
+        const loadVendorOrders = async () => {
+          const data = await apiRequest('/vendor/orders');
+          vendorOrders.value = data.orders || [];
+        };
+
+        const loadVendorSales = async () => {
+          vendorSales.value = await apiRequest('/vendor/sales');
+        };
+
+        const loadVendorData = async () => {
+          vendorLoading.value = true;
+          try {
+            await Promise.all([
+              loadVendorMenu(),
+              loadVendorOrders(),
+              loadVendorSales()
+            ]);
+          } catch (error) {
+            setVendorMessage(error.message || 'Could not load vendor data.');
+          } finally {
+            vendorLoading.value = false;
+          }
+        };
+
+        const resetMenuForm = () => {
+          editingItemId.value = '';
+          menuForm.value = {
+            name: '',
+            description: '',
+            price: '',
+            category: 'food'
+          };
+        };
+
+        const editMenuItem = (item) => {
+          editingItemId.value = item.item_id;
+          menuForm.value = {
+            name: item.name,
+            description: item.description || '',
+            price: item.price,
+            category: item.category
+          };
+          vendorTab.value = 'menu';
+        };
+
+        const saveMenuItem = async () => {
+          const payload = {
+            ...menuForm.value,
+            price: Number(menuForm.value.price)
+          };
+
+          try {
+            if (editingItemId.value) {
+              await apiRequest(`/vendor/menu/${editingItemId.value}`, {
+                method: 'PUT',
+                body: JSON.stringify(payload)
+              });
+              setVendorMessage('Menu item updated.');
+            } else {
+              await apiRequest('/vendor/menu', {
+                method: 'POST',
+                body: JSON.stringify(payload)
+              });
+              setVendorMessage('Menu item added.');
+            }
+
+            resetMenuForm();
+            await Promise.all([loadVendorMenu(), loadVendorSales()]);
+          } catch (error) {
+            setVendorMessage(error.message);
+          }
+        };
+
+        const toggleAvailability = async (item) => {
+          try {
+            await apiRequest(`/vendor/menu/${item.item_id}/availability`, {
+              method: 'PATCH',
+              body: JSON.stringify({ is_available: !Number(item.is_available) })
+            });
+            await loadVendorMenu();
+          } catch (error) {
+            setVendorMessage(error.message);
+          }
+        };
+
+        const deleteMenuItem = async (item) => {
+          if (!window.confirm(`Delete ${item.name}? Items used in orders cannot be deleted.`)) {
+            return;
+          }
+
+          try {
+            await apiRequest(`/vendor/menu/${item.item_id}`, { method: 'DELETE' });
+            setVendorMessage('Menu item deleted.');
+            await loadVendorMenu();
+          } catch (error) {
+            setVendorMessage(error.message);
+          }
+        };
+
+        const viewOrder = async (order) => {
+          try {
+            const data = await apiRequest(`/vendor/orders/${order.order_id}`);
+            selectedOrder.value = data.order;
+            selectedOrderItems.value = data.items || [];
+            vendorTab.value = 'orders';
+          } catch (error) {
+            setVendorMessage(error.message);
+          }
+        };
+
+        const updateOrderStatus = async (order, status) => {
+          try {
+            await apiRequest(`/vendor/orders/${order.order_id}/status`, {
+              method: 'PATCH',
+              body: JSON.stringify({ status })
+            });
+            setVendorMessage('Order status updated.');
+            await Promise.all([loadVendorOrders(), loadVendorSales()]);
+            if (selectedOrder.value && selectedOrder.value.order_id === order.order_id) {
+              selectedOrder.value.status = status;
+            }
+          } catch (error) {
+            setVendorMessage(error.message);
+          }
+        };
+
+        const pendingOrders = computed(() => vendorOrders.value.filter((order) => order.status !== 'completed' && order.status !== 'cancelled'));
+        const availableCount = computed(() => vendorMenu.value.filter((item) => Number(item.is_available)).length);
+
         return {
           addPreviewItem,
+          availableCount,
           cartCount,
           currentRoute,
+          deleteMenuItem,
+          editMenuItem,
+          editingItemId,
+          formatMoney,
+          loadVendorData,
+          menuForm,
           navItems,
+          pendingOrders,
           previewItems,
+          resetMenuForm,
           route,
-          routes
+          routes,
+          saveMenuItem,
+          selectedOrder,
+          selectedOrderItems,
+          toggleAvailability,
+          updateOrderStatus,
+          vendorLoading,
+          vendorMenu,
+          vendorMessage,
+          vendorOrders,
+          vendorSales,
+          vendorTab,
+          viewOrder
         };
       },
       template: `
@@ -1214,6 +1681,238 @@
               </div>
             </section>
           </template>
+
+          <section v-else-if="route === 'vendor'" class="page vendor-page">
+            <div class="vendor-header">
+              <div>
+                <p class="eyebrow">Vendor module</p>
+                <h1>Vendor Dashboard</h1>
+                <p>Manage menu availability, update incoming orders, and review completed sales records.</p>
+              </div>
+              <button class="pill-button primary" type="button" @click="loadVendorData">
+                {{ vendorLoading ? 'Refreshing...' : 'Refresh Data' }}
+              </button>
+            </div>
+
+            <p v-if="vendorMessage" class="vendor-alert">{{ vendorMessage }}</p>
+
+            <div class="vendor-tabs" role="tablist" aria-label="Vendor sections">
+              <button class="vendor-tab" :class="{ active: vendorTab === 'dashboard' }" type="button" @click="vendorTab = 'dashboard'">Dashboard</button>
+              <button class="vendor-tab" :class="{ active: vendorTab === 'orders' }" type="button" @click="vendorTab = 'orders'">Orders</button>
+              <button class="vendor-tab" :class="{ active: vendorTab === 'menu' }" type="button" @click="vendorTab = 'menu'">Menu Items</button>
+              <button class="vendor-tab" :class="{ active: vendorTab === 'sales' }" type="button" @click="vendorTab = 'sales'">Sales Records</button>
+            </div>
+
+            <template v-if="vendorTab === 'dashboard'">
+              <div class="vendor-grid">
+                <article class="metric-card">
+                  <span>Open orders</span>
+                  <strong>{{ pendingOrders.length }}</strong>
+                </article>
+                <article class="metric-card">
+                  <span>Completed orders</span>
+                  <strong>{{ vendorSales.summary.completed_orders || 0 }}</strong>
+                </article>
+                <article class="metric-card">
+                  <span>Total sales</span>
+                  <strong>{{ formatMoney(vendorSales.summary.total_sales) }}</strong>
+                </article>
+                <article class="metric-card">
+                  <span>Available items</span>
+                  <strong>{{ availableCount }}</strong>
+                </article>
+              </div>
+
+              <div class="vendor-panel">
+                <div class="vendor-panel-head">
+                  <h2>Incoming Orders</h2>
+                  <button class="small-action" type="button" @click="vendorTab = 'orders'">View All</button>
+                </div>
+                <table class="vendor-table">
+                  <thead>
+                    <tr>
+                      <th>Order</th>
+                      <th>Customer</th>
+                      <th>Total</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="order in pendingOrders.slice(0, 6)" :key="order.order_id">
+                      <td>{{ order.order_id }}</td>
+                      <td>{{ order.customer_name }}</td>
+                      <td>{{ formatMoney(order.total_amount) }}</td>
+                      <td><span class="status-pill" :class="order.status">{{ order.status }}</span></td>
+                      <td><button class="small-action" type="button" @click="viewOrder(order)">Details</button></td>
+                    </tr>
+                    <tr v-if="pendingOrders.length === 0">
+                      <td colspan="5" class="muted-text">No active orders right now.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </template>
+
+            <template v-if="vendorTab === 'orders'">
+              <div v-if="selectedOrder" class="order-detail">
+                <h3>Order {{ selectedOrder.order_id }} · {{ selectedOrder.customer_name }}</h3>
+                <p class="muted-text">{{ selectedOrder.customer_phone }} · {{ formatMoney(selectedOrder.total_amount) }}</p>
+                <ul>
+                  <li v-for="item in selectedOrderItems" :key="item.order_item_id">
+                    {{ item.quantity }}x {{ item.name }} - {{ formatMoney(item.subtotal) }}
+                  </li>
+                </ul>
+              </div>
+
+              <div class="vendor-panel">
+                <div class="vendor-panel-head">
+                  <h2>Order Dashboard</h2>
+                  <span class="muted-text">{{ vendorOrders.length }} orders</span>
+                </div>
+                <table class="vendor-table">
+                  <thead>
+                    <tr>
+                      <th>Order</th>
+                      <th>Customer</th>
+                      <th>Phone</th>
+                      <th>Items</th>
+                      <th>Total</th>
+                      <th>Status</th>
+                      <th>Update</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="order in vendorOrders" :key="order.order_id">
+                      <td><button class="small-action" type="button" @click="viewOrder(order)">{{ order.order_id }}</button></td>
+                      <td>{{ order.customer_name }}</td>
+                      <td>{{ order.customer_phone }}</td>
+                      <td>{{ order.item_count }}</td>
+                      <td>{{ formatMoney(order.total_amount) }}</td>
+                      <td><span class="status-pill" :class="order.status">{{ order.status }}</span></td>
+                      <td>
+                        <select class="vendor-select" :value="order.status" @change="updateOrderStatus(order, $event.target.value)">
+                          <option value="pending">pending</option>
+                          <option value="preparing">preparing</option>
+                          <option value="ready">ready</option>
+                          <option value="completed">completed</option>
+                          <option value="cancelled">cancelled</option>
+                        </select>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </template>
+
+            <template v-if="vendorTab === 'menu'">
+              <div class="vendor-panel">
+                <div class="vendor-panel-head">
+                  <h2>{{ editingItemId ? 'Update Menu Item' : 'Add Menu Item' }}</h2>
+                  <button v-if="editingItemId" class="small-action" type="button" @click="resetMenuForm">Cancel Edit</button>
+                </div>
+                <form class="vendor-form" @submit.prevent="saveMenuItem">
+                  <label>
+                    Name
+                    <input class="vendor-input" v-model="menuForm.name" required>
+                  </label>
+                  <label>
+                    Price
+                    <input class="vendor-input" v-model="menuForm.price" type="number" min="0.01" step="0.01" required>
+                  </label>
+                  <label>
+                    Category
+                    <select class="vendor-select" v-model="menuForm.category" required>
+                      <option value="food">food</option>
+                      <option value="drink">drink</option>
+                    </select>
+                  </label>
+                  <label class="wide">
+                    Description
+                    <textarea class="vendor-textarea" v-model="menuForm.description"></textarea>
+                  </label>
+                  <div class="inline-actions wide">
+                    <button class="small-action primary" type="submit">{{ editingItemId ? 'Save Changes' : 'Add Item' }}</button>
+                    <button class="small-action" type="button" @click="resetMenuForm">Clear</button>
+                  </div>
+                </form>
+
+                <table class="vendor-table">
+                  <thead>
+                    <tr>
+                      <th>Item</th>
+                      <th>Category</th>
+                      <th>Price</th>
+                      <th>Availability</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="item in vendorMenu" :key="item.item_id">
+                      <td>
+                        <strong>{{ item.name }}</strong>
+                        <div class="muted-text">{{ item.item_id }}</div>
+                      </td>
+                      <td>{{ item.category }}</td>
+                      <td>{{ formatMoney(item.price) }}</td>
+                      <td>
+                        <span class="status-pill" :class="Number(item.is_available) ? 'available' : 'sold-out'">
+                          {{ Number(item.is_available) ? 'available' : 'sold out' }}
+                        </span>
+                      </td>
+                      <td>
+                        <div class="inline-actions">
+                          <button class="small-action" type="button" @click="editMenuItem(item)">Edit</button>
+                          <button class="small-action" type="button" @click="toggleAvailability(item)">
+                            {{ Number(item.is_available) ? 'Sold Out' : 'Available' }}
+                          </button>
+                          <button class="danger-action" type="button" @click="deleteMenuItem(item)">Delete</button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </template>
+
+            <template v-if="vendorTab === 'sales'">
+              <div class="vendor-grid">
+                <article class="metric-card">
+                  <span>Completed orders</span>
+                  <strong>{{ vendorSales.summary.completed_orders || 0 }}</strong>
+                </article>
+                <article class="metric-card">
+                  <span>Total completed sales</span>
+                  <strong>{{ formatMoney(vendorSales.summary.total_sales) }}</strong>
+                </article>
+              </div>
+
+              <div class="vendor-panel">
+                <div class="vendor-panel-head">
+                  <h2>Popular Items</h2>
+                  <span class="muted-text">Completed orders only</span>
+                </div>
+                <table class="vendor-table">
+                  <thead>
+                    <tr>
+                      <th>Item</th>
+                      <th>Category</th>
+                      <th>Quantity Sold</th>
+                      <th>Sales</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="item in vendorSales.popular_items" :key="item.item_id">
+                      <td>{{ item.name }}</td>
+                      <td>{{ item.category }}</td>
+                      <td>{{ item.total_quantity }}</td>
+                      <td>{{ formatMoney(item.total_sales) }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </template>
+          </section>
 
           <section v-else class="page route-panel">
             <div class="empty-panel">
