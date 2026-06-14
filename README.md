@@ -10,34 +10,11 @@ This is a web-based Online Food & Drink Ordering System designed to centralize a
 - Student & Staff Ordering Portal
 - Real-time Order Tracking
 - centralized Database Management
-- Vue-based base UI shell with navigation placeholders
 
 ## Tech Stack
-- **Frontend**: Vue.js, HTML5, CSS3
-- **Backend**: PHP Slim
+- **Frontend**: HTML5, CSS3
+- **Backend**: PHP
 - **Database**: MariaDB / MySQL
-
----
-
-## Current Branch: Base UI
-
-The `base_ui` branch contains a starter interface for Universal Sambal.
-
-- Open `index.php` in XAMPP to view the Vue base UI.
-- Navigation is already prepared for Home, Menu, Cart, Orders, Profile, Vendor, and Login.
-- The pages are intentionally empty placeholders so module links/API routes can be connected later.
-- `src/main.php` contains starter Slim API routes for future backend development.
-- `composer.json` lists the Slim dependencies, but the `vendor` folder is not committed.
-
-### Future Slim Setup
-
-When backend development starts, install dependencies with Composer:
-
-```bash
-composer install
-```
-
-Then the placeholder API routes in `src/main.php` can be connected to the database tables in `database/cpad_03_Strange.sql`.
 
 ---
 
