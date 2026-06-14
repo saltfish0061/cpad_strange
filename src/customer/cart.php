@@ -1,114 +1,205 @@
-<?php
-session_start();
-require_once '../../includes/db.php';
-
-// Delete Item
-if (isset($_GET['delete'])) {
-    $id_to_delete = $_GET['delete'];
-    if (isset($_SESSION['cart'][$id_to_delete])) {
-        unset($_SESSION['cart'][$id_to_delete]);
-    }
-    header("Location: cart.php");
-    exit();
-}
-
-// Update Quantities
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['qty'])) {
-    foreach ($_POST['qty'] as $item_id => $quantity) {
-        if ($quantity < 1) {
-            unset($_SESSION['cart'][$item_id]);
-        } else {
-            $_SESSION['cart'][$item_id] = $quantity;
-        }
-    }
-    header("Location: cart.php");
-    exit();
-}
-
-$cart_items = [];
-$total_price = 0;
-
-if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
-    foreach ($_SESSION['cart'] as $item_id => $quantity) {
-        $stmt = $db_conn->prepare("SELECT * FROM menus WHERE item_id = ?");
-        $stmt->execute([$item_id]);
-        $item = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        if ($item) {
-            $subtotal = $item['price'] * $quantity;
-            $total_price += $subtotal;
-            $cart_items[] = [
-                'item_id' => $item_id,
-                'name' => $item['name'],
-                'price' => $item['price'],
-                'quantity' => $quantity,
-                'subtotal' => $subtotal
-            ];
-        }
-    }
-}
-?>
-
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>My Cart - Online Food Ordering</title>
-    <style>
-        body { width: 50%; margin: 0 auto; text-align: center; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; text-align: left; }
-        th, td { border: 1px solid #000; padding: 10px; }
-        .fit { width: 1%; white-space: nowrap; }
-        .price { text-align: right; }
-        .total-row { font-weight: bold; }
-    </style>
-</head>
-<body>
-    <h1>Your Shopping Cart</h1>
-    
-    <?php include '../../includes/customer_nav.php'; ?>
 
-    <?php if (empty($cart_items)): ?>
-        <p>Your cart is empty.</p>
-    <?php else: ?>
-        <form id="cartForm" action="cart.php" method="POST">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Item Name</th>
-                        <th class="fit">Price (RM)</th>
-                        <th class="fit">Qty</th>
-                        <th class="fit">Subtotal (RM)</th>
-                        <th class="fit">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($cart_items as $item): ?>
-                        <tr>
-                            <td><?php echo $item['name']; ?></td>
-                            <td class="price fit"><?php echo number_format($item['price'], 2); ?></td>
-                            <td class="fit">
-                                <input type="number" name="qty[<?php echo $item['item_id']; ?>]" 
-                                       value="<?php echo $item['quantity']; ?>" min="1" 
-                                       style="width: 50px;" 
-                                       onchange="this.form.submit()">
-                            </td>
-                            <td class="price fit"><?php echo number_format($item['subtotal'], 2); ?></td>
-                            <td class="fit"><a href="cart.php?delete=<?php echo $item['item_id']; ?>" onclick="return confirm('Remove this item?')">Delete</a></td>
-                        </tr>
-                    <?php endforeach; ?>
-                    <tr class="total-row">
-                        <td colspan="3" style="text-align: right;">Total Price:</td>
-                        <td class="price fit">RM <?php echo number_format($total_price, 2); ?></td>
-                        <td class="fit"></td>
-                    </tr>
-                </tbody>
-            </table>
-            
-            <div style="margin-top: 20px; margin-bottom: 30px;">
-                <a href="checkout.php"><button type="button" style="padding: 10px 20px;">Checkout</button></a>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Cart - Universal Sambal</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+
+<body>
+  <div id="app">
+    <main class="app-shell">
+      <?php
+        $root_path = "../../";
+        $active_page = "cart";
+        include '../../includes/customer_header.php';
+      ?>
+
+      <section class="page section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Your Selection</p>
+            <h2>Your Shopping Cart</h2>
+          </div>
+        </div>
+
+        <div v-if="cartIsEmpty" class="empty-panel">
+          <h1>Your Cart is Empty</h1>
+          <p>Add some delicious meals or refreshing drinks to your cart to get started.</p>
+          <a class="cta" href="menu.php" style="width: auto;">Explore Menu</a>
+        </div>
+
+        <div v-else class="cart-layout">
+          <div class="cart-items-list">
+            <div class="cart-item-card" v-for="item in cartItemsList" :key="item.item_id">
+              <img :src="getItemImage(item.item_id)" :alt="item.name" class="cart-item-img">
+              <div class="cart-item-info">
+                <h4>{{ item.name }}</h4>
+                <p>RM {{ parseFloat(item.price).toFixed(2) }}</p>
+              </div>
+              <div class="qty-controls">
+                <button class="qty-btn" @click="decreaseQty(item.item_id)">-</button>
+                <span class="qty-val">{{ item.quantity }}</span>
+                <button class="qty-btn" @click="increaseQty(item.item_id)">+</button>
+              </div>
+              <div class="cart-item-price" style="min-width: 80px; text-align: right;">
+                RM {{ item.subtotal.toFixed(2) }}
+              </div>
+              <button class="delete-item-btn" @click="removeItem(item.item_id)">&times; Remove</button>
             </div>
-        </form>
-    <?php endif; ?>
+          </div>
+
+          <div class="cart-summary-card">
+            <h3>Order Summary</h3>
+            <div class="summary-row">
+              <span>Subtotal</span>
+              <span>RM {{ cartTotal.toFixed(2) }}</span>
+            </div>
+            <div class="summary-row">
+              <span>Delivery / Service</span>
+              <span>FREE</span>
+            </div>
+            <div class="summary-row total">
+              <span>Total</span>
+              <span>RM {{ cartTotal.toFixed(2) }}</span>
+            </div>
+            <a class="cta" href="checkout.php">Proceed to Checkout</a>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        Universal Sambal Cart. Refined Customer flow.
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    const { createApp, computed, onMounted, ref } = Vue;
+
+    createApp({
+      setup() {
+        const cart = ref({});
+        const menuItems = ref([]);
+
+        const loadCart = () => {
+          try {
+            const savedCart = localStorage.getItem('cart');
+            if (savedCart) {
+              cart.value = JSON.parse(savedCart);
+            }
+          } catch (e) {
+            console.error('Failed to load cart:', e);
+          }
+        };
+
+        const saveCart = () => {
+          localStorage.setItem('cart', JSON.stringify(cart.value));
+        };
+
+        const cartIsEmpty = computed(() => {
+          return Object.keys(cart.value).length === 0;
+        });
+
+        const fetchMenu = async () => {
+          try {
+            const res = await fetch('../../api/menu');
+            const data = await res.json();
+            if (data.status === 'success') {
+              menuItems.value = data.items;
+            }
+          } catch (e) {
+            console.error('Error fetching menu:', e);
+          }
+        };
+
+        const getItemImage = (itemId) => {
+          const images = {
+            'F001': '../../images/food/ayam_merah.png',
+            'F002': '../../images/food/ayam_hijau.png',
+            'F003': '../../images/food/brownsugar.png',
+            'F004': '../../images/food/harimau.png',
+            'F005': '../../images/food/bawean.png',
+            'F006': '../../images/food/2rasa.png',
+            'F007': '../../images/food/3rasa.png',
+            'D001': '../../images/drink/orange.png',
+            'D002': '../../images/drink/carrot.png',
+            'D003': '../../images/drink/carrot_susu.png',
+            'D004': '../../images/drink/tembikai.png',
+            'D005': '../../images/drink/tembikai_susu.png'
+          };
+          return images[itemId] || '../../images/food/test.png';
+        };
+
+        const increaseQty = (itemId) => {
+          if (cart.value[itemId]) {
+            cart.value[itemId]++;
+          }
+          saveCart();
+        };
+
+        const decreaseQty = (itemId) => {
+          if (cart.value[itemId]) {
+            cart.value[itemId]--;
+            if (cart.value[itemId] <= 0) {
+              delete cart.value[itemId];
+            }
+            saveCart();
+          }
+        };
+
+        const removeItem = (itemId) => {
+          delete cart.value[itemId];
+          saveCart();
+        };
+
+        const cartItemsList = computed(() => {
+          const list = [];
+          for (const [itemId, qty] of Object.entries(cart.value)) {
+            const item = menuItems.value.find(m => m.item_id === itemId);
+            if (item) {
+              list.push({
+                ...item,
+                quantity: qty,
+                subtotal: parseFloat(item.price) * qty
+              });
+            } else {
+              list.push({
+                item_id: itemId,
+                name: 'Item ' + itemId,
+                price: 0,
+                quantity: qty,
+                subtotal: 0
+              });
+            }
+          }
+          return list;
+        });
+
+        const cartTotal = computed(() => {
+          return cartItemsList.value.reduce((sum, item) => sum + item.subtotal, 0);
+        });
+
+        onMounted(() => {
+          loadCart();
+          fetchMenu();
+        });
+
+        return {
+          cartIsEmpty,
+          cartItemsList,
+          cartTotal,
+          increaseQty,
+          decreaseQty,
+          removeItem,
+          getItemImage
+        };
+      }
+    }).mount('#app');
+  </script>
 </body>
+
 </html>

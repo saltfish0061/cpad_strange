@@ -1,89 +1,227 @@
-<?php
-session_start();
-require_once '../../includes/db.php';
-
-// Check if Order ID is provided
-if (!isset($_GET['id'])) {
-    header("Location: my_orders.php");
-    exit();
-}
-
-$order_id = $_GET['id'];
-$user_id = 'C001'; // Need to update after implement auth module
-
-try {
-    // 1. Fetch Order based on user_id 
-    $stmt = $db_conn->prepare("SELECT * FROM orders WHERE order_id = ? AND user_id = ?");
-    $stmt->execute([$order_id, $user_id]);
-    $order = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (!$order) {
-        die("Order not found"); // Cannot see others order from the link like(order_details.php?id=O001)
-    }
-
-    // 2. Fetch Order Items (Joined oder_items and menus)
-    $stmt = $db_conn->prepare("
-        SELECT oi.*, m.name as item_name, m.price as unit_price 
-        FROM order_items oi
-        JOIN menus m ON oi.item_id = m.item_id
-        WHERE oi.order_id = ?
-    ");
-    $stmt->execute([$order_id]);
-    $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-} catch (PDOException $e) {
-    die("Error fetching order details: " . $e->getMessage());
-}
-?>
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <title>Order Details - <?php echo $order_id; ?></title>
-    <style>
-        body { width: 50%; margin: 0 auto; text-align: center; }
-        .details-box { border: 1px solid #000; padding: 20px; margin-top: 20px; text-align: center; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; text-align: left; }
-        th, td { border: 1px solid #000; padding: 10px; }
-        .fit { width: 1%; white-space: nowrap; }
-        .price { text-align: right; }
-        .status-badge { font-weight: bold; text-transform: uppercase; border: 1px solid #000; padding: 2px 8px; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Details - Universal Sambal</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <link rel="stylesheet" href="../../css/style.css">
 </head>
+
 <body>
-    <h1>Order Details: <?php echo $order_id; ?></h1>
-    
-    <?php include '../../includes/customer_nav.php'; ?>
+  <div id="app">
+    <main class="app-shell">
+      <?php
+        $root_path = "../../";
+        $active_page = "orders";
+        include '../../includes/customer_header.php';
+      ?>
 
-    <div class="details-box">
-        <p><b>Order Date:</b> <?php echo $order['order_date']; ?></p>
-        <p><b>Status:</b> <span class="status-badge"><?php echo $order['status']; ?></span></p>
+      <section class="page section">
+        <div style="margin-bottom: 20px;">
+          <a class="pill-button" href="my_orders.php" style="display: inline-flex; align-items: center; gap: 8px; border-color: #000000; color: #000000;">
+            &larr; Back to Orders
+          </a>
+        </div>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Item Name</th>
-                    <th class="fit">Unit Price</th>
-                    <th class="fit">Quantity</th>
-                    <th class="fit">Subtotal (RM)</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($items as $item): ?>
-                    <tr>
-                        <td><?php echo $item['item_name']; ?></td>
-                        <td class="price fit"><?php echo number_format($item['unit_price'], 2); ?></td>
-                        <td class="fit" style="text-align: center;"><?php echo $item['quantity']; ?></td>
-                        <td class="price fit"><?php echo number_format($item['subtotal'], 2); ?></td>
-                    </tr>
-                <?php endforeach; ?>
-                <tr style="font-weight: bold;">
-                    <td colspan="3" style="text-align: right;">Grand Total:</td>
-                    <td class="price">RM <?php echo number_format($order['total_amount'], 2); ?></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+        <div v-if="loading" class="empty-panel">
+          <h1>Loading Details...</h1>
+          <p>Fetching order and delivery information...</p>
+        </div>
+
+        <div v-else-if="!currentOrder" class="empty-panel">
+          <h1>Order Not Found</h1>
+          <p>We couldn't find the requested order, or it doesn't belong to this account.</p>
+        </div>
+
+        <div v-else>
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Tracking ID: {{ currentOrder.order_id }}</p>
+              <h2>Order Status</h2>
+            </div>
+            <p>Placed on: {{ currentOrder.order_date }}</p>
+          </div>
+
+          <!-- Progress Tracker -->
+          <div class="progress-tracker">
+            <div class="progress-line" :style="{ width: progressPercent + '%' }"></div>
+            <div 
+              v-for="(step, idx) in trackerSteps" 
+              :key="step.status"
+              class="progress-step"
+              :class="{ 
+                active: currentOrder.status === step.status || (currentOrder.status === 'completed' && step.status === 'ready'),
+                completed: isStepCompleted(step.status)
+              }"
+            >
+              <div class="step-icon">
+                <span v-if="isStepCompleted(step.status)">&checkmark;</span>
+                <span v-else>{{ idx + 1 }}</span>
+              </div>
+              <div class="step-label">{{ step.label }}</div>
+            </div>
+          </div>
+
+          <div class="cart-layout" style="margin-top: 40px;">
+            <div class="cart-summary-card">
+              <h3>Order Details</h3>
+              <div class="summary-row" style="border-bottom: 1px solid var(--line); padding-bottom: 10px; margin-bottom: 10px; font-weight: bold;">
+                <span>Item</span>
+                <span style="display: grid; grid-template-columns: 80px 100px; text-align: right;">
+                  <span>Qty</span>
+                  <span>Subtotal</span>
+                </span>
+              </div>
+              <div 
+                v-for="item in currentOrderItems" 
+                :key="item.order_item_id" 
+                class="summary-row" 
+                style="font-size: 15px; margin-bottom: 10px;"
+              >
+                <span>{{ item.item_name }}</span>
+                <span style="display: grid; grid-template-columns: 80px 100px; text-align: right; color: var(--muted);">
+                  <span>x{{ item.quantity }}</span>
+                  <span style="font-weight: 800; color: var(--ink);">RM {{ parseFloat(item.subtotal).toFixed(2) }}</span>
+                </span>
+              </div>
+              <div class="summary-row total">
+                <span>Grand Total</span>
+                <span>RM {{ parseFloat(currentOrder.total_amount).toFixed(2) }}</span>
+              </div>
+            </div>
+
+            <div class="cart-summary-card">
+              <h3>Delivery / Pickup Info</h3>
+              <p><strong>Method:</strong> Self-Pickup at Cafeteria</p>
+              <p><strong>Customer Name:</strong> Saltfish</p>
+              <p><strong>Phone:</strong> 0157164916</p>
+              <div style="margin-top: 24px; padding: 16px; border-radius: 12px; background: var(--green-100); text-align: center;">
+                <p style="margin: 0; font-weight: bold; color: var(--sambal-dark);">
+                  Status: <span class="status-badge" :class="currentOrder.status">{{ currentOrder.status.toUpperCase() }}</span>
+                </p>
+                <p v-if="currentOrder.status === 'pending'" style="margin: 8px 0 0; font-size: 13px; color: var(--muted);">
+                  Waiting for vendor approval.
+                </p>
+                <p v-else-if="currentOrder.status === 'preparing'" style="margin: 8px 0 0; font-size: 13px; color: var(--muted);">
+                  Vendor is preparing your delicious meal!
+                </p>
+                <p v-else-if="currentOrder.status === 'ready'" style="margin: 8px 0 0; font-size: 13px; color: var(--muted);">
+                  Your order is ready! Please pick it up.
+                </p>
+                <p v-else-if="currentOrder.status === 'completed'" style="margin: 8px 0 0; font-size: 13px; color: var(--muted);">
+                  Thank you for dining with us!
+                </p>
+                <p v-else-if="currentOrder.status === 'cancelled'" style="margin: 8px 0 0; font-size: 13px; color: var(--muted);">
+                  This order was cancelled.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        Universal Sambal Order Tracking. Refined Customer flow.
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    const { createApp, computed, onMounted, ref } = Vue;
+
+    createApp({
+      setup() {
+        const cartCount = ref(0);
+        const currentOrder = ref(null);
+        const currentOrderItems = ref([]);
+        const loading = ref(false);
+
+        const loadCartCount = () => {
+          try {
+            const savedCart = localStorage.getItem('cart');
+            if (savedCart) {
+              const cart = JSON.parse(savedCart);
+              cartCount.value = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+            }
+          } catch (e) {
+            console.error('Failed to load cart:', e);
+          }
+        };
+
+        const fetchOrderDetails = async (id) => {
+          loading.value = true;
+          try {
+            const res = await fetch(`../../api/orders/${id}`);
+            if (res.status === 404) {
+              currentOrder.value = null;
+              currentOrderItems.value = [];
+              return;
+            }
+            const data = await res.json();
+            if (data.status === 'success') {
+              currentOrder.value = data.order;
+              currentOrderItems.value = data.items;
+            }
+          } catch (e) {
+            console.error('Error fetching order details:', e);
+          } finally {
+            loading.value = false;
+          }
+        };
+
+        const trackerSteps = [
+          { status: 'pending', label: 'Order Placed' },
+          { status: 'preparing', label: 'Preparing' },
+          { status: 'ready', label: 'Ready for Pickup' },
+          { status: 'completed', label: 'Completed' }
+        ];
+
+        const isStepCompleted = (stepStatus) => {
+          if (!currentOrder.value) return false;
+          const statusOrder = ['pending', 'preparing', 'ready', 'completed'];
+          const currentIdx = statusOrder.indexOf(currentOrder.value.status);
+          const stepIdx = statusOrder.indexOf(stepStatus);
+          
+          if (currentOrder.value.status === 'cancelled') {
+            return stepStatus === 'pending';
+          }
+          return stepIdx <= currentIdx;
+        };
+
+        const progressPercent = computed(() => {
+          if (!currentOrder.value) return 0;
+          if (currentOrder.value.status === 'cancelled') return 0;
+          const statusOrder = ['pending', 'preparing', 'ready', 'completed'];
+          const idx = statusOrder.indexOf(currentOrder.value.status);
+          if (idx === -1) return 0;
+          return (idx / (statusOrder.length - 1)) * 76; // Match progress bar boundaries
+        });
+
+        onMounted(() => {
+          loadCartCount();
+          const params = new URLSearchParams(window.location.search);
+          const id = params.get('id');
+          if (id) {
+            fetchOrderDetails(id);
+          } else {
+            currentOrder.value = null;
+          }
+        });
+
+        return {
+          cartCount,
+          currentOrder,
+          currentOrderItems,
+          loading,
+          trackerSteps,
+          isStepCompleted,
+          progressPercent
+        };
+      }
+    }).mount('#app');
+  </script>
 </body>
+
 </html>

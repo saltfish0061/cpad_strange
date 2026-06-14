@@ -1,104 +1,221 @@
-<?php
-session_start();
-require_once '../../includes/db.php';
-
-$message = "";
-
-// Handle Add to Cart
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['items'])) {
-    if (!isset($_SESSION['cart'])) {
-        $_SESSION['cart'] = [];
-    }
-
-    $added_count = 0;
-    foreach ($_POST['items'] as $item_id => $quantity) {
-        if ($quantity > 0) {
-            if (isset($_SESSION['cart'][$item_id])) {
-                $_SESSION['cart'][$item_id] += $quantity;
-            } else {
-                $_SESSION['cart'][$item_id] = $quantity;
-            }
-            $added_count++;
-        }
-    }
-    
-    if ($added_count > 0) {
-        $message = "Your items have been added into cart!";
-    }
-}
-
-// Fetch all available menu items
-try {
-    $sql = "SELECT * FROM menus WHERE is_available = 1 ORDER BY category, name";
-    $stmt = $db_conn->prepare($sql);
-    $stmt->execute();
-    $menu_items = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    die("Error fetching menu: " . $e->getMessage());
-}
-?>
-
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Customer Menu - Online Food Ordering</title>
-    <style>
-        body { width: 50%; margin: 0 auto; text-align: center; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; text-align: left; }
-        th, td { border: 1px solid #000; padding: 10px; }
-        .fit { width: 1%; white-space: nowrap; }
-        .category-header { font-weight: bold; text-decoration: underline; text-align: center; }
-        .price { text-align: right; }
-        .message { color: green; font-weight: bold; margin: 10px 0; }
-    </style>
-</head>
-<body>
-    <h1>Our Menu</h1>
-    
-    <?php include '../../includes/customer_nav.php'; ?>
 
-    <?php if ($message): ?>
-        <p class="message"><?php echo $message; ?></p>
-    <?php endif; ?>
-    
-    <form action="menu.php" method="POST">
-        <table>
-            <thead>
-                <tr>
-                    <th>Item Name</th>
-                    <th>Description</th>
-                    <th class="fit">Price (RM)</th>
-                    <th class="fit">Qty</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php 
-                $current_category = "";
-                foreach ($menu_items as $item): 
-                    if ($current_category != $item['category']): 
-                        $current_category = $item['category'];
-                ?>
-                    <tr class="category-header">
-                        <td colspan="4"><?php echo strtoupper($current_category); ?></td>
-                    </tr>
-                <?php endif; ?>
-                    <tr>
-                        <td><?php echo $item['name']; ?></td>
-                        <td><?php echo $item['description']; ?></td>
-                        <td class="price fit"><?php echo number_format($item['price'], 2); ?></td>
-                        <td class="fit">
-                            <input type="number" name="items[<?php echo $item['item_id']; ?>]" min="0" value="0" style="width: 50px;">
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-        
-        <div style="margin-top: 20px; margin-bottom: 30px; text-align: center;">
-            <button type="submit">Add to Cart</button>
-            <button type="reset">Clear Selection</button>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Our Menu - Universal Sambal</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+
+<body>
+  <div id="app">
+    <main class="app-shell">
+      <?php
+        $root_path = "../../";
+        $active_page = "menu";
+        include '../../includes/customer_header.php';
+      ?>
+
+      <section class="page section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Fresh & Delicious</p>
+            <h2>Our Menu</h2>
+          </div>
+          <p>Browse our selection of authentic dishes and refreshing beverages.</p>
         </div>
-    </form>
+
+        <div class="menu-controls">
+          <div class="categories">
+            <button 
+              v-for="cat in ['all', 'food', 'drink']" 
+              :key="cat"
+              class="category-btn"
+              :class="{ active: selectedCategory === cat }"
+              @click="selectedCategory = cat"
+            >
+              {{ cat.toUpperCase() }}
+            </button>
+          </div>
+          <input 
+            type="text" 
+            v-model="searchQuery" 
+            placeholder="Search for food or drinks..." 
+            class="search-input"
+          >
+        </div>
+
+        <div v-if="loading" class="empty-panel">
+          <h1>Loading...</h1>
+          <p>Fetching our fresh menus from the kitchen...</p>
+        </div>
+
+        <div v-else-if="filteredMenu.length === 0" class="empty-panel">
+          <h1>No Items Found</h1>
+          <p>We couldn't find any items matching your criteria. Try adjusting your filters.</p>
+        </div>
+
+        <div v-else class="card-grid">
+          <article class="food-card" v-for="item in filteredMenu" :key="item.item_id">
+            <img :src="getItemImage(item.item_id)" :alt="item.name">
+            <div class="food-card-body">
+              <h3>{{ item.name }}</h3>
+              <p class="meta">{{ item.description }}</p>
+              <div class="price-row">
+                <span>RM {{ parseFloat(item.price).toFixed(2) }}</span>
+                <div v-if="cart[item.item_id] > 0" class="qty-controls">
+                  <button class="qty-btn" @click="decreaseQty(item.item_id)">-</button>
+                  <span class="qty-val">{{ cart[item.item_id] }}</span>
+                  <button class="qty-btn" @click="increaseQty(item.item_id)">+</button>
+                </div>
+                <button v-else class="add-button" type="button" @click="increaseQty(item.item_id)" aria-label="Add item">+</button>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div class="menu-checkout-container" style="display: flex; justify-content: center; margin-top: 40px; margin-bottom: 20px;">
+          <button 
+            class="cta" 
+            :disabled="cartIsEmpty"
+            @click="goToCheckout"
+            style="width: 100%; max-width: 320px; text-align: center; border: 0;"
+          >
+            Proceed to Checkout ({{ cartCount }} {{ cartCount === 1 ? 'item' : 'items' }})
+          </button>
+        </div>
+      </section>
+
+      <footer class="footer">
+        Universal Sambal Menu. Refined Customer flow.
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    const { createApp, computed, onMounted, ref } = Vue;
+
+    createApp({
+      setup() {
+        const cart = ref({});
+        const menuItems = ref([]);
+        const loading = ref(false);
+        const selectedCategory = ref('all');
+        const searchQuery = ref('');
+
+        const loadCart = () => {
+          try {
+            const savedCart = localStorage.getItem('cart');
+            if (savedCart) {
+              cart.value = JSON.parse(savedCart);
+            }
+          } catch (e) {
+            console.error('Failed to load cart:', e);
+          }
+        };
+
+        const saveCart = () => {
+          localStorage.setItem('cart', JSON.stringify(cart.value));
+        };
+
+        const fetchMenu = async () => {
+          loading.value = true;
+          try {
+            const res = await fetch('../../api/menu');
+            const data = await res.json();
+            if (data.status === 'success') {
+              menuItems.value = data.items;
+            }
+          } catch (e) {
+            console.error('Error fetching menu:', e);
+          } finally {
+            loading.value = false;
+          }
+        };
+
+        const filteredMenu = computed(() => {
+          return menuItems.value.filter(item => {
+            const matchesCat = selectedCategory.value === 'all' || item.category === selectedCategory.value;
+            const matchesSearch = item.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+              (item.description && item.description.toLowerCase().includes(searchQuery.value.toLowerCase()));
+            return matchesCat && matchesSearch;
+          });
+        });
+
+        const getItemImage = (itemId) => {
+          const images = {
+            'F001': '../../images/food/ayam_merah.png',
+            'F002': '../../images/food/ayam_hijau.png',
+            'F003': '../../images/food/brownsugar.png',
+            'F004': '../../images/food/harimau.png',
+            'F005': '../../images/food/bawean.png',
+            'F006': '../../images/food/2rasa.png',
+            'F007': '../../images/food/3rasa.png',
+            'D001': '../../images/drink/orange.png',
+            'D002': '../../images/drink/carrot.png',
+            'D003': '../../images/drink/carrot_susu.png',
+            'D004': '../../images/drink/tembikai.png',
+            'D005': '../../images/drink/tembikai_susu.png'
+          };
+          return images[itemId] || '../../images/food/test.png';
+        };
+
+        const increaseQty = (itemId) => {
+          if (cart.value[itemId]) {
+            cart.value[itemId]++;
+          } else {
+            cart.value[itemId] = 1;
+          }
+          saveCart();
+        };
+
+        const decreaseQty = (itemId) => {
+          if (cart.value[itemId]) {
+            cart.value[itemId]--;
+            if (cart.value[itemId] <= 0) {
+              delete cart.value[itemId];
+            }
+            saveCart();
+          }
+        };
+
+        const cartCount = computed(() => {
+          return Object.values(cart.value).reduce((sum, qty) => sum + qty, 0);
+        });
+
+        const cartIsEmpty = computed(() => {
+          return cartCount.value === 0;
+        });
+
+        const goToCheckout = () => {
+          if (!cartIsEmpty.value) {
+            window.location.href = 'checkout.php';
+          }
+        };
+
+        onMounted(() => {
+          loadCart();
+          fetchMenu();
+        });
+
+        return {
+          cart,
+          filteredMenu,
+          getItemImage,
+          increaseQty,
+          decreaseQty,
+          loading,
+          selectedCategory,
+          searchQuery,
+          cartCount,
+          cartIsEmpty,
+          goToCheckout
+        };
+      }
+    }).mount('#app');
+  </script>
 </body>
+
 </html>

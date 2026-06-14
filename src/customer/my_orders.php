@@ -1,81 +1,140 @@
-<?php
-session_start();
-require_once '../../includes/db.php';
-
-// Test User
-$user_id = 'C001'; 
-
-$view = isset($_GET['view']) ? $_GET['view'] : 'current';
-
-try {
-    if ($view === 'history') {
-        $stmt = $db_conn->prepare("SELECT * FROM orders WHERE user_id = ? AND status IN ('completed', 'cancelled') ORDER BY order_date DESC");
-        $title = "Order History";
-    } else {
-        $stmt = $db_conn->prepare("SELECT * FROM orders WHERE user_id = ? AND status IN ('pending', 'preparing', 'ready') ORDER BY order_date DESC");
-        $title = "Current Order Status";
-    }
-    
-    $stmt->execute([$user_id]);
-    $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    die("Error fetching orders: " . $e->getMessage());
-}
-?>
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <title><?php echo $title; ?> - Online Food Ordering</title>
-    <style>
-        body { width: 50%; margin: 0 auto; text-align: center; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; text-align: left; }
-        th, td { border: 1px solid #000; padding: 10px; }
-        .fit { width: 1%; white-space: nowrap; }
-        .status-pending { color: orange; font-weight: bold; }
-        .status-preparing { color: blue; font-weight: bold; }
-        .status-ready { color: green; font-weight: bold; }
-        .status-completed { color: gray; }
-        .status-cancelled { color: red; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Orders - Universal Sambal</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <link rel="stylesheet" href="../../css/style.css">
 </head>
+
 <body>
-    <h1>My Orders</h1>
-    
-    <?php include '../../includes/customer_nav.php'; ?>
+  <div id="app">
+    <main class="app-shell">
+      <?php
+        $root_path = "../../";
+        $active_page = "orders";
+        include '../../includes/customer_header.php';
+      ?>
 
-    <h3><?php echo $title; ?></h3>
+      <section class="page section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">My Activity</p>
+            <h2>Your Orders</h2>
+          </div>
+        </div>
 
-    <?php if (empty($orders)): ?>
-        <p>No orders found in this section.</p>
-    <?php else: ?>
-        <table>
-            <thead>
-                <tr>
-                    <th class="fit">Order ID</th>
-                    <th>Date</th>
-                    <th class="fit">Total (RM)</th>
-                    <th class="fit">Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($orders as $order): ?>
-                    <tr>
-                        <td class="fit">
-                            <a href="order_details.php?id=<?php echo $order['order_id']; ?>">
-                                <?php echo $order['order_id']; ?>
-                            </a>
-                        </td>
-                        <td><?php echo $order['order_date']; ?></td>
-                        <td class="fit" style="text-align: right;"><?php echo number_format($order['total_amount'], 2); ?></td>
-                        <td class="fit status-<?php echo $order['status']; ?>">
-                            <?php echo strtoupper($order['status']); ?>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    <?php endif; ?>
+        <div class="tabs">
+          <div 
+            class="tab-item" 
+            :class="{ active: orderTab === 'active' }"
+            @click="orderTab = 'active'"
+          >
+            Active Orders
+          </div>
+          <div 
+            class="tab-item" 
+            :class="{ active: orderTab === 'history' }"
+            @click="orderTab = 'history'"
+          >
+            Order History
+          </div>
+        </div>
+
+        <div v-if="loading" class="empty-panel">
+          <h1>Loading Orders...</h1>
+          <p>Fetching your order records from our servers...</p>
+        </div>
+
+        <div v-else-if="filteredOrders.length === 0" class="empty-panel">
+          <h1>No Orders Found</h1>
+          <p>You don't have any orders in this section yet.</p>
+          <a class="cta" href="menu.php">Order Now</a>
+        </div>
+
+        <div v-else>
+          <div class="order-card" v-for="order in filteredOrders" :key="order.order_id">
+            <div class="order-info">
+              <h4>Order #{{ order.order_id }}</h4>
+              <p>Placed on: {{ order.order_date }}</p>
+              <p style="font-weight: 800; color: var(--green-900); margin-top: 8px;">
+                Total: RM {{ parseFloat(order.total_amount).toFixed(2) }}
+              </p>
+            </div>
+            <div style="display: flex; align-items: center; gap: 20px;">
+              <span class="status-badge" :class="order.status">{{ order.status }}</span>
+              <a class="cta" :href="'order_details.php?id=' + order.order_id" style="padding: 6px 16px; font-size: 13px; min-height: 34px;">View Details</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        Universal Sambal Orders. Refined Customer flow.
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    const { createApp, computed, onMounted, ref } = Vue;
+
+    createApp({
+      setup() {
+        const cartCount = ref(0);
+        const orders = ref([]);
+        const loading = ref(false);
+        const orderTab = ref('active');
+
+        const loadCartCount = () => {
+          try {
+            const savedCart = localStorage.getItem('cart');
+            if (savedCart) {
+              const cart = JSON.parse(savedCart);
+              cartCount.value = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+            }
+          } catch (e) {
+            console.error('Failed to load cart:', e);
+          }
+        };
+
+        const fetchOrders = async () => {
+          loading.value = true;
+          try {
+            const res = await fetch('../../api/orders');
+            const data = await res.json();
+            if (data.status === 'success') {
+              orders.value = data.orders;
+            }
+          } catch (e) {
+            console.error('Error fetching orders:', e);
+          } finally {
+            loading.value = false;
+          }
+        };
+
+        const filteredOrders = computed(() => {
+          return orders.value.filter(order => {
+            const isActive = ['pending', 'preparing', 'ready'].includes(order.status);
+            return orderTab.value === 'active' ? isActive : !isActive;
+          });
+        });
+
+        onMounted(() => {
+          loadCartCount();
+          fetchOrders();
+        });
+
+        return {
+          cartCount,
+          filteredOrders,
+          loading,
+          orderTab
+        };
+      }
+    }).mount('#app');
+  </script>
 </body>
+
 </html>
