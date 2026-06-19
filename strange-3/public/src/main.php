@@ -4,8 +4,8 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
 
-require __DIR__ . '/../vendor/autoload.php';
-$db_conn = require __DIR__ . '/../includes/db.php';
+require __DIR__ . '/../../vendor/autoload.php';
+$db_conn = require __DIR__ . '/../libs/db_connect_PDO_SLIM.php';
 
 $app = AppFactory::create();
 
