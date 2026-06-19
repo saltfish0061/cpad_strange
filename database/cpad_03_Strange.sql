@@ -126,7 +126,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES ('A001','Admin_Geprek','Geprek4ever','admin','0137461935'),('A002','Admin_Sambal','Sambal4ever','admin','0158163956'),('C001','Saltfish','wwww2333','customer','0157164916'),('C002','Muhammad','abcdefg','customer','0183472383'),('C003','Danial','ABCDEFG','customer','0147153852'),('C004','Afiq','1234567','customer','0183649261'),('C005','Siang','siangmalam','customer','0117461835'),('C006','Ng','NotGood','customer','0147528251'),('C007','Wei','24681357','customer','0192715418');
+INSERT INTO `users` VALUES ('A001','Admin','admin123','admin','0137461935'),('A002','Vendor','vendor123','admin','0158163956'),('C001','Customer','customer123','customer','0157164916'),('C002','Muhammad','abcdefg','customer','0183472383'),('C003','Danial','ABCDEFG','customer','0147153852'),('C004','Afiq','1234567','customer','0183649261'),('C005','Siang','siangmalam','customer','0117461835'),('C006','Ng','NotGood','customer','0147528251'),('C007','Wei','24681357','customer','0192715418');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
