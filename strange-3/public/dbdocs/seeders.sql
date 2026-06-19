@@ -18,20 +18,20 @@ INSERT INTO `menus` VALUES
 ON DUPLICATE KEY UPDATE `name`=VALUES(`name`);
 
 -- Insert into users
-INSERT INTO `users` VALUES 
-('A001','Admin','admin123','admin','0137461935'),
-('A002','Vendor','vendor123','admin','0158163956'),
-('C001','Customer','customer123','customer','0157164916'),
-('C002','Muhammad','abcdefg','customer','0183472383'),
-('C003','Danial','ABCDEFG','customer','0147153852'),
-('C004','Afiq','1234567','customer','0183649261'),
-('C005','Siang','siangmalam','customer','0117461835'),
-('C006','Ng','NotGood','customer','0147528251'),
-('C007','Wei','24681357','customer','0192715418')
-ON DUPLICATE KEY UPDATE `name`=VALUES(`name`);
+INSERT INTO `users` (`user_id`, `name`, `password`, `role`, `phone`, `address`) VALUES 
+('A001','Admin','admin123','admin','0137461935','Vendor counter'),
+('A002','Vendor','vendor123','admin','0158163956','Kitchen counter'),
+('C001','Customer','customer123','customer','0157164916','Kolej Tun Razak, UTM'),
+('C002','Muhammad','abcdefg','customer','0183472383','Kolej Rahman Putra, UTM'),
+('C003','Danial','ABCDEFG','customer','0147153852','Kolej Tun Hussein Onn, UTM'),
+('C004','Afiq','1234567','customer','0183649261','Kolej Perdana, UTM'),
+('C005','Siang','siangmalam','customer','0117461835','Kolej 9, UTM'),
+('C006','Ng','NotGood','customer','0147528251','Kolej 10, UTM'),
+('C007','Wei','24681357','customer','0192715418','Kolej Datin Seri Endon, UTM')
+ON DUPLICATE KEY UPDATE `name`=VALUES(`name`), `phone`=VALUES(`phone`), `address`=VALUES(`address`);
 
 -- Insert into orders
-INSERT INTO `orders` VALUES 
+INSERT INTO `orders` (`order_id`, `user_id`, `total_amount`, `status`, `order_date`) VALUES 
 ('O001','C001',11.20,'completed','2026-05-13 12:25:30'),
 ('O002','C002',17.10,'completed','2026-05-13 12:25:30'),
 ('O003','C003',22.40,'completed','2026-05-13 12:25:30'),

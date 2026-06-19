@@ -226,6 +226,16 @@ button {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  justify-content: center;
+  min-width: 66px;
+}
+
+#header-cart-count {
+  display: inline-block;
+  min-width: 2ch;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
 }
 
 .cart-icon {
@@ -262,6 +272,7 @@ button {
 
 .hero-copy {
   z-index: 3;
+  transform: translateX(-50px);
 }
 
 .eyebrow {
@@ -312,7 +323,31 @@ button {
   transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
 }
 
-.cta::after {
+.cta-float {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  left: 50%;
+  z-index: 1000;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 24px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--yellow);
+  color: #201800;
+  cursor: pointer;
+  font-weight: 800;
+  overflow: hidden;
+  box-shadow: 0 16px 32px rgba(67, 17, 13, 0.2);
+  transform: translateX(-50%);
+  transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease, opacity 180ms ease;
+}
+
+.cta::after,
+.cta-float::after {
   position: absolute;
   inset: 0;
   content: "";
@@ -321,12 +356,18 @@ button {
   transition: transform 420ms ease;
 }
 
-.cta:hover {
+.cta:hover,
+.cta-float:hover {
   transform: translateY(-3px);
   box-shadow: 0 16px 28px rgba(67, 17, 13, 0.18);
 }
 
-.cta:hover::after {
+.cta-float:hover {
+  transform: translateX(-50%) translateY(-3px);
+}
+
+.cta:hover::after,
+.cta-float:hover::after {
   transform: translateX(130%);
 }
 
@@ -716,6 +757,69 @@ button {
   width: 100%;
   height: 210px;
   object-fit: cover;
+}
+
+.sold-out-section {
+  margin-top: 44px;
+}
+
+.section-head.compact {
+  margin-bottom: 18px;
+}
+
+.sold-out-card {
+  opacity: 0.92;
+}
+
+.sold-out-card:hover {
+  transform: none;
+  box-shadow: 0 10px 24px rgba(67, 17, 13, 0.08);
+}
+
+.sold-out-media {
+  position: relative;
+  height: 210px;
+  overflow: hidden;
+}
+
+.sold-out-media img {
+  height: 100%;
+  filter: brightness(0.42) grayscale(0.25);
+}
+
+.sold-out-ribbon {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.72);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.sold-out-card .qty-btn {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.menu-checkout-container {
+  min-height: 72px;
+}
+
+.menu-checkout-container .cta-float:disabled {
+  background: #cccccc;
+  color: #777777;
+  cursor: not-allowed;
+  opacity: 0.62;
+  box-shadow: none;
+  transform: translateX(-50%);
+}
+
+.menu-checkout-container .cta-float:disabled::after {
+  display: none;
 }
 
 .food-card-body {
@@ -1206,6 +1310,81 @@ button {
   text-align: center;
 }
 
+.cart-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  overflow: hidden;
+  background: var(--green-800);
+  border-radius: 999px;
+  transition: width 220ms ease, padding 220ms ease, gap 220ms ease, background-color 220ms ease;
+}
+
+.cart-stepper .qty-btn {
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+}
+
+.cart-stepper .dec,
+.cart-stepper .qty-val {
+  flex-basis: 0;
+  width: 0;
+  min-width: 0;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.7);
+  transition: flex-basis 220ms ease, width 220ms ease, opacity 160ms ease, transform 220ms ease;
+}
+
+.cart-stepper .inc {
+  background: transparent;
+}
+
+.cart-stepper:not(.active) {
+  position: relative;
+}
+
+.cart-stepper:not(.active) .inc {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+}
+
+.cart-stepper.active {
+  gap: 8px;
+  width: 104px;
+  padding: 4px 6px;
+  background: var(--green-100);
+}
+
+.cart-stepper.active .qty-btn {
+  flex-basis: 28px;
+  width: 28px;
+  height: 28px;
+}
+
+.cart-stepper.active .dec {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1);
+}
+
+.cart-stepper.active .qty-val {
+  flex-basis: 16px;
+  width: 16px;
+  opacity: 1;
+  transform: scale(1);
+}
+
+.cart-stepper.active .inc {
+  background: var(--green-800);
+}
+
 .cart-layout {
   display: grid;
   grid-template-columns: 1.4fr 0.8fr;
@@ -1274,6 +1453,80 @@ button {
   padding-bottom: 12px;
 }
 
+.floating-checkout-bar {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  left: 24px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 auto;
+  max-width: 720px;
+  padding: 12px 14px 12px 18px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 18px 40px rgba(67, 17, 13, 0.18);
+  backdrop-filter: blur(12px);
+}
+
+.floating-checkout-bar div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.floating-checkout-bar span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.floating-checkout-bar strong {
+  font-size: 18px;
+}
+
+.floating-checkout-bar .cta {
+  width: auto;
+  min-width: 210px;
+}
+
+@media (max-width: 640px) {
+  .floating-checkout-bar {
+    right: 12px;
+    bottom: 12px;
+    left: 12px;
+    padding: 10px 10px 10px 14px;
+  }
+
+  .floating-checkout-bar .cta {
+    min-width: 0;
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  .menu-checkout-container {
+    min-height: 72px;
+  }
+
+  .cta-float {
+    right: 12px;
+    bottom: 12px;
+    left: 12px;
+    width: calc(100% - 24px) !important;
+    max-width: none !important;
+    transform: none;
+  }
+
+  .cta-float:hover,
+  .menu-checkout-container .cta-float:disabled {
+    transform: none;
+  }
+}
+
 .summary-row {
   display: flex;
   justify-content: space-between;
@@ -1328,6 +1581,12 @@ button {
   border-radius: 8px;
   font-size: 14px;
   outline: none;
+}
+
+textarea.form-control {
+  min-height: 96px;
+  resize: vertical;
+  font: inherit;
 }
 
 .form-control:focus {
@@ -1431,6 +1690,11 @@ button {
 .status-badge.ready {
   background: #e2f5e8;
   color: #2e7d32;
+}
+
+.status-badge.on_the_way {
+  background: #dcecff;
+  color: #164b86;
 }
 
 .status-badge.completed {
@@ -1872,6 +2136,11 @@ button {
 .status-pill.ready {
   background: #dcecff;
   color: #164b86;
+}
+
+.status-pill.on_the_way {
+  background: #d9f2ff;
+  color: #0f5f82;
 }
 
 .small-action,

@@ -43,6 +43,7 @@
             <div class="profile-avatar">{{ profileInitials }}</div>
             <h3>{{ currentUser.name }}</h3>
             <p>{{ currentUser.phone }}</p>
+            <p class="muted-text">{{ currentUser.address || 'No address saved' }}</p>
             <a class="small-action" href="my_orders.php">View Orders</a>
           </aside>
 
@@ -59,6 +60,11 @@
               <label class="form-field">
                 <span>Phone</span>
                 <input v-model="profileForm.phone" required>
+              </label>
+
+              <label class="form-field wide">
+                <span>Address</span>
+                <textarea class="form-control" v-model="profileForm.address" required></textarea>
               </label>
 
               <div class="inline-actions wide">
@@ -122,7 +128,8 @@
         const passwordError = ref('');
         const profileForm = ref({
           name: '',
-          phone: ''
+          phone: '',
+          address: ''
         });
         const passwordForm = ref({
           old_password: '',
@@ -133,7 +140,8 @@
         const syncProfileForm = (user) => {
           profileForm.value = {
             name: user?.name || '',
-            phone: user?.phone || ''
+            phone: user?.phone || '',
+            address: user?.address || ''
           };
         };
 

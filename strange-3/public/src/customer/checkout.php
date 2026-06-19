@@ -45,6 +45,33 @@
                 <input type="text" id="phone" v-model="checkoutForm.phone" class="form-control" required readonly>
               </div>
               <div class="form-group">
+                <label for="address">Address</label>
+                <textarea id="address" v-model="checkoutForm.address" class="form-control" required readonly></textarea>
+              </div>
+              <div class="form-group">
+                <label for="order-note">Order Note</label>
+                <textarea id="order-note" v-model="checkoutForm.orderNote" class="form-control" readonly></textarea>
+              </div>
+              <div class="form-group">
+                <label>Delivery Method</label>
+                <div class="payment-methods">
+                  <div
+                    class="payment-method-card"
+                    :class="{ active: checkoutForm.deliveryMethod === 'pickup' }"
+                    @click="checkoutForm.deliveryMethod = 'pickup'"
+                  >
+                    Pickup
+                  </div>
+                  <div
+                    class="payment-method-card"
+                    :class="{ active: checkoutForm.deliveryMethod === 'delivery' }"
+                    @click="checkoutForm.deliveryMethod = 'delivery'"
+                  >
+                    Delivery
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
                 <label>Payment Method</label>
                 <div class="payment-methods">
                   <div 
@@ -103,9 +130,13 @@
       setup() {
         const cart = ref({});
         const menuItems = ref([]);
+        const currentUser = ref(null);
         const checkoutForm = ref({
-          name: 'Saltfish',
-          phone: '0157164916',
+          name: '',
+          phone: '',
+          address: '',
+          orderNote: '',
+          deliveryMethod: 'pickup',
           paymentMethod: 'cod'
         });
         const submitting = ref(false);
@@ -123,6 +154,28 @@
 
         const saveCart = () => {
           localStorage.setItem('cart', JSON.stringify(cart.value));
+        };
+
+        const loadCheckoutProfile = async () => {
+          try {
+            const savedUser = localStorage.getItem('currentUser');
+            currentUser.value = savedUser ? JSON.parse(savedUser) : null;
+            if (!currentUser.value?.user_id) return;
+
+            const res = await fetch(`../../api/profile/${currentUser.value.user_id}`);
+            const data = await res.json();
+            if (data.status === 'success') {
+              currentUser.value = data.user;
+              localStorage.setItem('currentUser', JSON.stringify(data.user));
+            }
+          } catch (e) {
+            console.error('Error loading checkout profile:', e);
+          } finally {
+            checkoutForm.value.name = currentUser.value?.name || '';
+            checkoutForm.value.phone = currentUser.value?.phone || '';
+            checkoutForm.value.address = currentUser.value?.address || '';
+            checkoutForm.value.orderNote = localStorage.getItem('orderNote') || '';
+          }
         };
 
         const cartCount = computed(() => {
@@ -169,17 +222,33 @@
         });
 
         const submitOrder = async () => {
+          if (!currentUser.value?.user_id) {
+            alert('Please login before placing an order.');
+            return;
+          }
+
+          if (checkoutForm.value.deliveryMethod === 'delivery' && !checkoutForm.value.address) {
+            alert('Please add your address in Profile before choosing delivery.');
+            return;
+          }
+
           submitting.value = true;
           try {
             const res = await fetch('../../api/orders', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ items: cart.value })
+              body: JSON.stringify({
+                user_id: currentUser.value.user_id,
+                items: cart.value,
+                order_note: checkoutForm.value.orderNote,
+                delivery_method: checkoutForm.value.deliveryMethod
+              })
             });
             const data = await res.json();
             if (data.status === 'success') {
               cart.value = {};
               saveCart();
+              localStorage.removeItem('orderNote');
               window.location.href = 'confirm_order.php?order_id=' + data.order_id;
             } else {
               alert('Error: ' + data.message);
@@ -194,6 +263,7 @@
 
         onMounted(() => {
           loadCart();
+          loadCheckoutProfile();
           fetchMenu();
         });
 

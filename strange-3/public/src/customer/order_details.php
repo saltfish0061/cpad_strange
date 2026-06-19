@@ -52,7 +52,7 @@
               :key="step.status"
               class="progress-step"
               :class="{ 
-                active: currentOrder.status === step.status || (currentOrder.status === 'completed' && step.status === 'ready'),
+                active: currentOrder.status === step.status || (currentOrder.status === 'completed' && step.status === handoffStatus),
                 completed: isStepCompleted(step.status)
               }"
             >
@@ -94,12 +94,14 @@
 
             <div class="cart-summary-card">
               <h3>Delivery / Pickup Info</h3>
-              <p><strong>Method:</strong> Self-Pickup at Cafeteria</p>
-              <p><strong>Customer Name:</strong> Saltfish</p>
-              <p><strong>Phone:</strong> 0157164916</p>
+              <p><strong>Method:</strong> {{ formatDeliveryMethod(currentOrder.delivery_method) }}</p>
+              <p><strong>Customer Name:</strong> {{ currentUser?.name || currentOrder.user_id }}</p>
+              <p><strong>Phone:</strong> {{ currentUser?.phone || '-' }}</p>
+              <p><strong>Address:</strong> {{ currentUser?.address || '-' }}</p>
+              <p v-if="currentOrder.order_note"><strong>Note:</strong> {{ currentOrder.order_note }}</p>
               <div style="margin-top: 24px; padding: 16px; border-radius: 12px; background: var(--green-100); text-align: center;">
                 <p style="margin: 0; font-weight: bold; color: var(--sambal-dark);">
-                  Status: <span class="status-badge" :class="currentOrder.status">{{ currentOrder.status.toUpperCase() }}</span>
+                  Status: <span class="status-badge" :class="currentOrder.status">{{ formatOrderStatus(currentOrder.status) }}</span>
                 </p>
                 <p v-if="currentOrder.status === 'pending'" style="margin: 8px 0 0; font-size: 13px; color: var(--muted);">
                   Waiting for vendor approval.
@@ -109,6 +111,9 @@
                 </p>
                 <p v-else-if="currentOrder.status === 'ready'" style="margin: 8px 0 0; font-size: 13px; color: var(--muted);">
                   Your order is ready! Please pick it up.
+                </p>
+                <p v-else-if="currentOrder.status === 'on_the_way'" style="margin: 8px 0 0; font-size: 13px; color: var(--muted);">
+                  Your order is on the way.
                 </p>
                 <p v-else-if="currentOrder.status === 'completed'" style="margin: 8px 0 0; font-size: 13px; color: var(--muted);">
                   Thank you for dining with us!
@@ -134,9 +139,19 @@
     createApp({
       setup() {
         const cartCount = ref(0);
+        const currentUser = ref(null);
         const currentOrder = ref(null);
         const currentOrderItems = ref([]);
         const loading = ref(false);
+
+        const loadCurrentUser = () => {
+          try {
+            const savedUser = localStorage.getItem('currentUser');
+            currentUser.value = savedUser ? JSON.parse(savedUser) : null;
+          } catch (e) {
+            currentUser.value = null;
+          }
+        };
 
         const loadCartCount = () => {
           try {
@@ -150,10 +165,32 @@
           }
         };
 
+        const formatDeliveryMethod = (method) => {
+          return method === 'delivery' ? 'Delivery' : 'Self-Pickup at Cafeteria';
+        };
+
+        const formatOrderStatus = (status) => {
+          const labels = {
+            pending: 'Pending',
+            preparing: 'Preparing',
+            ready: 'Ready',
+            on_the_way: 'On the way',
+            completed: 'Completed',
+            cancelled: 'Cancelled'
+          };
+          return labels[status] || status;
+        };
+
         const fetchOrderDetails = async (id) => {
+          if (!currentUser.value?.user_id) {
+            currentOrder.value = null;
+            currentOrderItems.value = [];
+            return;
+          }
+
           loading.value = true;
           try {
-            const res = await fetch(`../../api/orders/${id}`);
+            const res = await fetch(`../../api/orders/${id}?user_id=${encodeURIComponent(currentUser.value.user_id)}`);
             if (res.status === 404) {
               currentOrder.value = null;
               currentOrderItems.value = [];
@@ -171,16 +208,20 @@
           }
         };
 
-        const trackerSteps = [
+        const handoffStatus = computed(() => currentOrder.value?.delivery_method === 'delivery' ? 'on_the_way' : 'ready');
+        const trackerSteps = computed(() => [
           { status: 'pending', label: 'Order Placed' },
           { status: 'preparing', label: 'Preparing' },
-          { status: 'ready', label: 'Ready for Pickup' },
+          {
+            status: handoffStatus.value,
+            label: currentOrder.value?.delivery_method === 'delivery' ? 'On the way' : 'Ready for Pickup'
+          },
           { status: 'completed', label: 'Completed' }
-        ];
+        ]);
 
         const isStepCompleted = (stepStatus) => {
           if (!currentOrder.value) return false;
-          const statusOrder = ['pending', 'preparing', 'ready', 'completed'];
+          const statusOrder = ['pending', 'preparing', handoffStatus.value, 'completed'];
           const currentIdx = statusOrder.indexOf(currentOrder.value.status);
           const stepIdx = statusOrder.indexOf(stepStatus);
           
@@ -193,13 +234,14 @@
         const progressPercent = computed(() => {
           if (!currentOrder.value) return 0;
           if (currentOrder.value.status === 'cancelled') return 0;
-          const statusOrder = ['pending', 'preparing', 'ready', 'completed'];
+          const statusOrder = ['pending', 'preparing', handoffStatus.value, 'completed'];
           const idx = statusOrder.indexOf(currentOrder.value.status);
           if (idx === -1) return 0;
           return (idx / (statusOrder.length - 1)) * 76; // Match progress bar boundaries
         });
 
         onMounted(() => {
+          loadCurrentUser();
           loadCartCount();
           const params = new URLSearchParams(window.location.search);
           const id = params.get('id');
@@ -212,8 +254,12 @@
 
         return {
           cartCount,
+          currentUser,
           currentOrder,
           currentOrderItems,
+          formatDeliveryMethod,
+          formatOrderStatus,
+          handoffStatus,
           loading,
           trackerSteps,
           isStepCompleted,

@@ -42,36 +42,57 @@
           <p>Fetching our fresh menus from the kitchen...</p>
         </div>
 
-        <div v-else-if="filteredMenu.length === 0" class="empty-panel">
+        <div v-else-if="availableMenu.length === 0 && soldOutMenu.length === 0" class="empty-panel">
           <h1>No Items Found</h1>
           <p>We couldn't find any items matching your criteria. Try adjusting your filters.</p>
         </div>
 
-        <div v-else class="card-grid">
-          <article class="food-card" v-for="item in filteredMenu" :key="item.item_id">
+        <div v-else-if="availableMenu.length > 0" class="card-grid">
+          <article class="food-card" v-for="item in availableMenu" :key="item.item_id">
             <img :src="getItemImage(item.item_id)" :alt="item.name">
             <div class="food-card-body">
               <h3>{{ item.name }}</h3>
               <p class="meta">{{ item.description }}</p>
               <div class="price-row">
                 <span>RM {{ parseFloat(item.price).toFixed(2) }}</span>
-                <transition name="cart-control" mode="out-in">
-                  <div v-if="cart[item.item_id] > 0" class="qty-controls" :key="`qty-${item.item_id}`">
-                    <button class="qty-btn" type="button" @click="decreaseQty(item.item_id)">-</button>
-                    <span class="qty-val">{{ cart[item.item_id] }}</span>
-                    <button class="qty-btn" type="button" @click="increaseQty(item.item_id)">+</button>
-                  </div>
-                  <button v-else class="add-button" :key="`add-${item.item_id}`" type="button"
-                    @click="increaseQty(item.item_id)" aria-label="Add item">+</button>
-                </transition>
+                <div class="cart-stepper" :class="{ active: cart[item.item_id] > 0 }">
+                  <button class="qty-btn dec" type="button" @click="decreaseQty(item.item_id)" aria-label="Remove item">-</button>
+                  <span class="qty-val">{{ cart[item.item_id] || '' }}</span>
+                  <button class="qty-btn inc" type="button" @click="increaseQty(item.item_id)" aria-label="Add item">+</button>
+                </div>
               </div>
             </div>
           </article>
         </div>
 
+        <div v-if="soldOutMenu.length > 0" class="sold-out-section">
+          <div class="section-head compact">
+            <div>
+              <p class="eyebrow">Unavailable</p>
+              <h2>Sold Out Today</h2>
+            </div>
+          </div>
+          <div class="card-grid">
+            <article class="food-card sold-out-card" v-for="item in soldOutMenu" :key="item.item_id">
+              <div class="sold-out-media">
+                <img :src="getItemImage(item.item_id)" :alt="item.name">
+                <span class="sold-out-ribbon">Sold Out</span>
+              </div>
+              <div class="food-card-body">
+                <h3>{{ item.name }}</h3>
+                <p class="meta">{{ item.description }}</p>
+                <div class="price-row">
+                  <span>RM {{ parseFloat(item.price).toFixed(2) }}</span>
+                  <button class="qty-btn" type="button" disabled aria-label="Sold out">+</button>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+
         <div class="menu-checkout-container"
           style="display: flex; justify-content: center; margin-top: 40px; margin-bottom: 20px;">
-          <button class="cta" :disabled="cartIsEmpty" @click="goToCheckout"
+          <button class="cta-float" :disabled="cartIsEmpty" @click="goToCheckout"
             style="width: 100%; max-width: 320px; text-align: center; border: 0;">
             Proceed to Checkout ({{ cartCount }} {{ cartCount === 1 ? 'item' : 'items' }})
           </button>
@@ -117,7 +138,7 @@
         const fetchMenu = async () => {
           loading.value = true;
           try {
-            const res = await fetch('../../api/menu');
+            const res = await fetch('../../api/menu?include_unavailable=1');
             const data = await res.json();
             if (data.status === 'success') {
               menuItems.value = data.items;
@@ -137,6 +158,9 @@
             return matchesCat && matchesSearch;
           });
         });
+
+        const availableMenu = computed(() => filteredMenu.value.filter((item) => Number(item.is_available)));
+        const soldOutMenu = computed(() => filteredMenu.value.filter((item) => !Number(item.is_available)));
 
         const getItemImage = (itemId) => {
           const images = {
@@ -203,7 +227,8 @@
 
         return {
           cart,
-          filteredMenu,
+          availableMenu,
+          soldOutMenu,
           getItemImage,
           increaseQty,
           decreaseQty,

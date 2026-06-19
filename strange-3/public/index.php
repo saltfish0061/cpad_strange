@@ -112,14 +112,11 @@
                 <p class="meta">{{ item.description }}</p>
                 <div class="price-row">
                   <span>RM {{ parseFloat(item.price).toFixed(2) }}</span>
-                  <transition name="cart-control" mode="out-in">
-                    <div v-if="cart[item.item_id] > 0" class="qty-controls" :key="`qty-${item.item_id}`">
-                      <button class="qty-btn" type="button" @click="decreaseQty(item.item_id)">-</button>
-                      <span class="qty-val">{{ cart[item.item_id] }}</span>
-                      <button class="qty-btn" type="button" @click="increaseQty(item.item_id)">+</button>
-                    </div>
-                    <button v-else class="add-button" :key="`add-${item.item_id}`" type="button" @click="increaseQty(item.item_id)" aria-label="Add item">+</button>
-                  </transition>
+                  <div class="cart-stepper" :class="{ active: cart[item.item_id] > 0 }">
+                    <button class="qty-btn dec" type="button" @click="decreaseQty(item.item_id)" aria-label="Remove item">-</button>
+                    <span class="qty-val">{{ cart[item.item_id] || '' }}</span>
+                    <button class="qty-btn inc" type="button" @click="increaseQty(item.item_id)" aria-label="Add item">+</button>
+                  </div>
                 </div>
               </div>
             </article>
