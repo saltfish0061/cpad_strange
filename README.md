@@ -18,10 +18,14 @@ This is a web-based Online Food & Drink Ordering System designed to centralize a
 
 ---
 
-## Directory Structure
+## Code Directory Structure
 The repository is structured as follows:
-- **Root Directory (`cpad-project/`)**: Contains the `README.md` file.
-- **Application Directory (`strange-3/`)**: Contains the website logic, assets, routes, and database configuration.
+- **Root Directory (`cpad-project/`)**: Contains the `README.md` documentation file.
+- **Application Root (`strange-3/`)**: Contains the vendor libraries, Composer config files, and the main web directory.
+- **Main Code Location (`strange-3/public/src/`)**: This is where all the application source code (PHP pages, controllers, models) is located:
+  - `src/customer/`: Contains customer-facing pages (menu, cart, orders, profile).
+  - `src/vendor/`: Contains vendor/admin dashboard and merchant controls.
+  - `src/auth/`: Contains the login page and session authentication code. This folder is critical because it "locks" (secures) the customer and vendor sections, ensuring that only authenticated users with the correct role (e.g. admin role for the vendor dashboard) can access restricted parts of the website.
 
 ---
 
@@ -58,8 +62,8 @@ Since this project uses the PHP Slim 4 Framework for API routing:
 
 #### Method B: Using MySQL Command Line
 1.  Open your terminal or XAMPP Shell.
-2.  Log in to MySQL.
-3.  Run the following commands (adjusting the SQL source path to your local absolute path):
+2.  Log in to MySQL 
+3.  Run the following commands:
      ```sql
      CREATE DATABASE IF NOT EXISTS cpad_03_strange;
      USE cpad_03_strange;
