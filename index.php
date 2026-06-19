@@ -41,6 +41,11 @@
         label: 'Vendor',
         title: 'Vendor Dashboard',
         path: '#/vendor'
+      },
+      login: {
+        label: 'Login',
+        title: 'Login',
+        path: '#/login'
       }
     };
 
@@ -48,6 +53,13 @@
       setup() {
         const route = ref('home');
         const cartCount = ref(0);
+        const currentUser = ref(JSON.parse(localStorage.getItem('universalSambalUser') || 'null'));
+        const loginForm = ref({
+          identifier: '',
+          password: ''
+        });
+        const loginError = ref('');
+        const loginLoading = ref(false);
 
         // Load cart count from localStorage
         const updateCartCount = () => {
@@ -131,10 +143,55 @@
           }
         };
 
+        const login = async () => {
+          loginError.value = '';
+          loginLoading.value = true;
+
+          try {
+            const response = await fetch('api/login', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                name: loginForm.value.identifier,
+                user_id: loginForm.value.identifier,
+                password: loginForm.value.password
+              })
+            });
+            const payload = await response.json();
+
+            if (!response.ok) {
+              throw new Error(payload.error || 'Login failed.');
+            }
+
+            currentUser.value = payload.user;
+            localStorage.setItem('universalSambalUser', JSON.stringify(payload.user));
+            loginForm.value.password = '';
+            window.location.hash = payload.user.role === 'admin' ? '#/vendor' : '#/profile';
+          } catch (error) {
+            loginError.value = error.message || 'Login failed.';
+          } finally {
+            loginLoading.value = false;
+          }
+        };
+
+        const logout = () => {
+          currentUser.value = null;
+          localStorage.removeItem('universalSambalUser');
+          window.location.hash = '#/login';
+        };
+
         return {
           addPreviewItem,
           cartCount,
           currentRoute,
+          currentUser,
+          login,
+          loginError,
+          loginForm,
+          loginLoading,
+          logout,
           navItems,
           previewItems,
           route,
@@ -142,8 +199,8 @@
         };
       },
       template: `
-        <main class="app-shell">
-          <header class="topbar">
+        <main class="app-shell" :class="{ 'auth-only-shell': route === 'login' }">
+          <header v-if="route !== 'login'" class="topbar">
             <a class="brand" href="index.php" aria-label="Universal Sambal home">
               <span class="brand-mark">US</span>
               <span>Universal Sambal</span>
@@ -179,7 +236,8 @@
                 </svg>
                 <span>{{ cartCount }}</span>
               </a>
-              <a class="pill-button primary" href="#/login">Login</a>
+              <button v-if="currentUser" class="pill-button" type="button" @click="logout">Logout</button>
+              <a v-else class="pill-button primary" href="#/login">Login</a>
             </div>
           </header>
 
@@ -308,6 +366,57 @@
             </section>
           </template>
 
+          <section v-else-if="route === 'login'" class="page route-panel auth-page">
+            <div class="auth-shell">
+              <div class="auth-copy">
+                <div class="auth-brand">
+                  <span class="brand-mark">US</span>
+                  <span>Universal Sambal</span>
+                </div>
+                <h1>Welcome back</h1>
+
+                <div class="auth-food-stage">
+                  <img src="images/food/ayam_merah.png" alt="Ayam geprek sambal merah">
+                </div>
+              </div>
+
+              <form class="auth-card" @submit.prevent="login">
+                <div class="auth-card-head">
+                  <h2>Sign in</h2>
+                </div>
+                <div class="form-field">
+                  <label for="login-identifier">Name or User ID</label>
+                  <input
+                    id="login-identifier"
+                    v-model.trim="loginForm.identifier"
+                    type="text"
+                    autocomplete="username"
+                    placeholder="Enter your name or user ID"
+                    required
+                  >
+                </div>
+
+                <div class="form-field">
+                  <label for="login-password">Password</label>
+                  <input
+                    id="login-password"
+                    v-model="loginForm.password"
+                    type="password"
+                    autocomplete="current-password"
+                    placeholder="Enter your password"
+                    required
+                  >
+                </div>
+
+                <p v-if="loginError" class="form-error">{{ loginError }}</p>
+
+                <button class="auth-submit" type="submit" :disabled="loginLoading">
+                  {{ loginLoading ? 'Signing in...' : 'Sign in' }}
+                </button>
+              </form>
+            </div>
+          </section>
+
           <section v-else class="page route-panel">
             <div class="empty-panel">
               <div>
@@ -324,7 +433,7 @@
             </div>
           </section>
 
-          <footer class="footer">
+          <footer v-if="route !== 'login'" class="footer">
             Universal Sambal base UI. Vue frontend linked to individual customer PHP pages.
           </footer>
         </main>

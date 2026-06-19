@@ -15,6 +15,15 @@ $app->setBasePath($basePath);
 
 $app->addBodyParsingMiddleware();
 
+function jsonResponse(Response $response, array $payload, int $status = 200): Response
+{
+    $response->getBody()->write(json_encode($payload));
+
+    return $response
+        ->withHeader('Content-Type', 'application/json')
+        ->withStatus($status);
+}
+
 $app->get('/api/health', function (Request $request, Response $response) {
     $payload = [
         'status' => 'ok',
@@ -42,6 +51,47 @@ $app->get('/api/menu', function (Request $request, Response $response) use ($db_
             'message' => $e->getMessage()
         ]));
         return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+    }
+});
+
+$app->post('/api/login', function (Request $request, Response $response) use ($db_conn) {
+    $data = (array) $request->getParsedBody();
+    $identifier = trim($data['name'] ?? $data['user_id'] ?? '');
+    $password = trim($data['password'] ?? '');
+
+    if ($identifier === '' || $password === '') {
+        return jsonResponse($response, [
+            'error' => 'Name or user ID and password are required.',
+        ], 422);
+    }
+
+    try {
+        $stmt = $db_conn->prepare(
+            'SELECT user_id, name, role, phone FROM users
+             WHERE (name = :identifier OR user_id = :identifier) AND password = :password
+             LIMIT 1'
+        );
+        $stmt->execute([
+            'identifier' => $identifier,
+            'password' => $password,
+        ]);
+
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$user) {
+            return jsonResponse($response, [
+                'error' => 'Invalid login credentials.',
+            ], 401);
+        }
+
+        return jsonResponse($response, [
+            'message' => 'Login successful.',
+            'user' => $user,
+        ]);
+    } catch (Throwable $error) {
+        return jsonResponse($response, [
+            'error' => 'Unable to login right now.',
+        ], 500);
     }
 });
 
