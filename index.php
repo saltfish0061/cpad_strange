@@ -41,6 +41,11 @@
         label: 'Vendor',
         title: 'Vendor Dashboard',
         path: '#/vendor'
+      },
+      login: {
+        label: 'Login',
+        title: 'Login',
+        path: '#/login'
       }
     };
 
@@ -49,6 +54,12 @@
         const route = ref('home');
         const cartCount = ref(0);
         const apiBase = 'api';
+        const currentUser = ref(null);
+        const loginError = ref('');
+        const loginForm = ref({
+          user_id: '',
+          password: ''
+        });
         const vendorTab = ref('dashboard');
         const vendorLoading = ref(false);
         const vendorMessage = ref('');
@@ -152,6 +163,45 @@
           } catch (e) {
             console.error(e);
           }
+        };
+
+        const loadCurrentUser = () => {
+          try {
+            const savedUser = localStorage.getItem('currentUser');
+            currentUser.value = savedUser ? JSON.parse(savedUser) : null;
+          } catch (e) {
+            currentUser.value = null;
+          }
+        };
+
+        const login = () => {
+          loginError.value = '';
+          const userId = loginForm.value.user_id.trim();
+          const password = loginForm.value.password.trim();
+
+          if (!userId || !password) {
+            loginError.value = 'Please enter your user ID and password.';
+            return;
+          }
+
+          const role = userId.toUpperCase().startsWith('A') ? 'admin' : 'customer';
+          currentUser.value = {
+            user_id: userId,
+            name: role === 'admin' ? 'Vendor Staff' : 'Customer',
+            role
+          };
+          localStorage.setItem('currentUser', JSON.stringify(currentUser.value));
+          window.location.hash = role === 'admin' ? '#/vendor' : '#/profile';
+        };
+
+        const logout = () => {
+          localStorage.removeItem('currentUser');
+          currentUser.value = null;
+          loginForm.value = {
+            user_id: '',
+            password: ''
+          };
+          window.location.hash = '#/home';
         };
 
         const formatMoney = (value) => {
@@ -328,15 +378,22 @@
           return `${Math.max(10, (Number(item.total_quantity || 0) / maxQuantity) * 100)}%`;
         };
 
+        loadCurrentUser();
+
         return {
           addPreviewItem,
           availableCount,
           cartCount,
+          currentUser,
           currentRoute,
           deleteMenuItem,
           editMenuItem,
           editingItemId,
           formatMoney,
+          login,
+          loginError,
+          loginForm,
+          logout,
           loadVendorData,
           menuForm,
           navItems,
@@ -363,8 +420,8 @@
         };
       },
       template: `
-        <main class="app-shell">
-          <header class="topbar">
+        <main class="app-shell" :class="{ 'auth-only-shell': route === 'login' }">
+          <header v-if="route !== 'login'" class="topbar">
             <a class="brand" href="index.php" aria-label="Universal Sambal home">
               <span class="brand-mark">US</span>
               <span>Universal Sambal</span>
@@ -400,11 +457,50 @@
                 </svg>
                 <span>{{ cartCount }}</span>
               </a>
-              <a class="pill-button primary" href="#/login">Login</a>
+              <button v-if="currentUser" class="pill-button" type="button" @click="logout">Logout</button>
+              <a v-else class="pill-button primary" href="#/login">Login</a>
             </div>
           </header>
 
-          <template v-if="route === 'home'">
+          <section v-if="route === 'login'" class="auth-page">
+            <div class="auth-shell">
+              <div class="auth-copy">
+                <a class="auth-brand" href="index.php" aria-label="Universal Sambal home">
+                  <span class="brand-mark">US</span>
+                  <span>Universal Sambal</span>
+                </a>
+                <p class="eyebrow">Staff and customer access</p>
+                <h1>Welcome back to the sambal counter</h1>
+                <div class="auth-food-stage">
+                  <img src="images/food/test.png" alt="Ayam geprek sambal merah">
+                </div>
+              </div>
+
+              <form class="auth-card" @submit.prevent="login">
+                <div class="auth-card-head">
+                  <p class="eyebrow">Login</p>
+                  <h2>Enter your account</h2>
+                </div>
+
+                <label class="form-field">
+                  <span>User ID</span>
+                  <input v-model="loginForm.user_id" placeholder="Example: C001 or A001" autocomplete="username">
+                </label>
+
+                <label class="form-field">
+                  <span>Password</span>
+                  <input v-model="loginForm.password" type="password" placeholder="Your password" autocomplete="current-password">
+                </label>
+
+                <p v-if="loginError" class="form-error">{{ loginError }}</p>
+
+                <button class="auth-submit" type="submit">Login</button>
+                <a class="pill-button" href="index.php">Back Home</a>
+              </form>
+            </div>
+          </section>
+
+          <template v-else-if="route === 'home'">
             <section class="landing-top">
               <div class="page hero">
                 <div class="hero-copy">
@@ -747,95 +843,6 @@
                         <button class="small-action" type="button" @click="resetMenuForm">Clear</button>
                       </div>
                     </form>
-
-                    <table class="vendor-table">
-                      <thead>
-                        <tr>
-                          <th>Item</th>
-                          <th>Category</th>
-                          <th>Price</th>
-                          <th>Availability</th>
-                          <th>Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr v-for="item in vendorMenu" :key="item.item_id">
-                          <td>
-                            <strong>{{ item.name }}</strong>
-                            <div class="muted-text">{{ item.item_id }}</div>
-                          </td>
-                          <td>{{ item.category }}</td>
-                          <td>{{ formatMoney(item.price) }}</td>
-                          <td>
-                            <span class="status-pill" :class="Number(item.is_available) ? 'available' : 'sold-out'">
-                              {{ Number(item.is_available) ? 'available' : 'sold out' }}
-                            </span>
-                          </td>
-                          <td>
-                            <div class="inline-actions">
-                              <button class="small-action" type="button" @click="editMenuItem(item)">Edit</button>
-                              <button class="small-action" type="button" @click="toggleAvailability(item)">
-                                {{ Number(item.is_available) ? 'Sold Out' : 'Available' }}
-                              </button>
-                              <button class="danger-action" type="button" @click="deleteMenuItem(item)">Delete</button>
-                            </div>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </template>
-
-                <template v-if="vendorTab === 'sales'">
-                  <div class="vendor-grid">
-                    <article class="metric-card green">
-                      <span>Completed orders</span>
-                      <strong>{{ vendorSales.summary.completed_orders || 0 }}</strong>
-                      <em class="metric-mini">Recorded sales</em>
-                    </article>
-                    <article class="metric-card hot">
-                      <span>Total completed sales</span>
-                      <strong>{{ formatMoney(vendorSales.summary.total_sales) }}</strong>
-                      <em class="metric-mini">Revenue snapshot</em>
-                    </article>
-                  </div>
-
-                  <div class="vendor-split">
-                    <div class="vendor-panel">
-                      <div class="vendor-panel-head">
-                        <div>
-                          <h2>Popular Items</h2>
-                          <span class="vendor-panel-subtitle">Completed orders only</span>
-                        </div>
-                      </div>
-                      <div class="popular-list">
-                        <div class="popular-row" v-for="item in vendorSales.popular_items" :key="item.item_id">
-                          <div>
-                            <strong>{{ item.name }}</strong>
-                            <span>{{ item.category }} - {{ item.total_quantity }} sold - {{ formatMoney(item.total_sales) }}</span>
-                            <div class="popular-bar"><span :style="{ width: popularBarWidth(item) }"></span></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="vendor-panel">
-                      <div class="vendor-panel-head">
-                        <div>
-                          <h2>Status Mix</h2>
-                          <span class="vendor-panel-subtitle">All order records</span>
-                        </div>
-                      </div>
-                      <div class="queue-list">
-                        <div class="queue-row" v-for="status in vendorSales.status_counts" :key="status.status">
-                          <div>
-                            <strong>{{ status.status }}</strong>
-                            <span>orders</span>
-                          </div>
-                          <b class="queue-count">{{ status.total }}</b>
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 </template>
               </div>
@@ -858,7 +865,7 @@
             </div>
           </section>
 
-          <footer class="footer">
+          <footer v-if="route !== 'login'" class="footer">
             Universal Sambal base UI. Vue frontend linked to individual customer PHP pages.
           </footer>
         </main>
