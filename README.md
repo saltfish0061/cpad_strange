@@ -22,10 +22,10 @@ This is a web-based Online Food & Drink Ordering System designed to centralize a
 The repository is structured as follows:
 - **Root Directory (`cpad-project/`)**: Contains the `README.md` documentation file.
 - **Application Root (`strange-3/`)**: Contains the vendor libraries, Composer config files, and the main web directory.
-- **Main Code Location (`strange-3/public/src/`)**: This is where all the application source code (PHP pages, controllers, models) is located:
+- **Main Code Location (`strange-3/public/src/`)**: This is where all the application source code is located:
   - `src/customer/`: Contains customer-facing pages (menu, cart, orders, profile).
   - `src/vendor/`: Contains vendor/admin dashboard and merchant controls.
-  - `src/auth/`: Contains the login page and session authentication code. This folder is critical because it "locks" (secures) the customer and vendor sections, ensuring that only authenticated users with the correct role (e.g. admin role for the vendor dashboard) can access restricted parts of the website.
+  - `src/auth/`: Contains the login page and session authentication code.
 
 ---
 
@@ -57,7 +57,7 @@ Since this project uses the PHP Slim 4 Framework for API routing:
      GRANT ALL PRIVILEGES ON cpad_03_strange.* TO 'cpad'@'localhost';
      FLUSH PRIVILEGES;
      ```
-4.  Open the SQL dump file located at `strange-3/database/cpad_03_Strange.sql`, copy all content, and paste it **after** the code above.
+4.  Open the SQL dump file located at `strange-3/public/dbdocs/cpad_03_Strange.sql`, copy all content, and paste it **after** the code above.
 5.  Click **Go**.
 
 #### Method B: Using MySQL Command Line
@@ -70,7 +70,7 @@ Since this project uses the PHP Slim 4 Framework for API routing:
      CREATE USER IF NOT EXISTS 'cpad'@'localhost' IDENTIFIED BY 'cpadPassword';
      GRANT ALL PRIVILEGES ON cpad_03_strange.* TO 'cpad'@'localhost';
      FLUSH PRIVILEGES;
-     SOURCE C:/xampp/htdocs/cpad-project/strange-3/database/cpad_03_Strange.sql;
+     SOURCE C:/xampp/htdocs/cpad-project/strange-3/public/dbdocs/cpad_03_Strange.sql;
      ```
 
 
@@ -78,9 +78,9 @@ Since this project uses the PHP Slim 4 Framework for API routing:
 To back up the database for submission, run from the command line:
 
 ```bash
-mariadb-dump --user=cpad --password cpad_03_strange > strange-3/database/cpad_03_Strange.sql
+mariadb-dump --user=cpad --password=cpadPassword cpad_03_strange > strange-3/public/dbdocs/cpad_03_Strange.sql
 ```
 or
 ```bash
-mysqldump --user=cpad --password cpad_03_strange > strange-3/database/cpad_03_Strange.sql
+mysqldump --user=cpad --password=cpadPassword cpad_03_strange > strange-3/public/dbdocs/cpad_03_Strange.sql
 ```
