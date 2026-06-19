@@ -12,23 +12,31 @@ This is a web-based Online Food & Drink Ordering System designed to centralize a
 - centralized Database Management
 
 ## Tech Stack
-- **Frontend**: HTML5, CSS3
-- **Backend**: PHP
+- **Frontend**: HTML5, CSS3, JavaScript (Vue.js 3 via CDN, Lottie Player)
+- **Backend**: PHP (Slim 4 Framework)
 - **Database**: MariaDB / MySQL
+
+---
+
+## Directory Structure
+The repository is structured as follows:
+- **Root Directory (`cpad-project/`)**: Contains the `README.md` file.
+- **Application Directory (`strange-3/`)**: Contains the website logic, assets, routes, and database configuration.
 
 ---
 
 ## Setup Instructions
 
 ### 1. Project Initialization
-1.  Clone the repository into your XAMPP `htdocs` folder.
+1.  Clone the repository into your XAMPP `htdocs` folder (e.g., `C:\xampp\htdocs\cpad-project`).
 2.  Start **Apache** and **MySQL** from the XAMPP Control Panel.
 
 ### 2. Install Dependencies
 Since this project uses the PHP Slim 4 Framework for API routing:
 1. Make sure you have **Composer** installed.
-2. Open your terminal in the project root folder and run:
+2. Open your terminal in the `strange-3` subdirectory and run:
    ```bash
+   cd strange-3
    composer install
    ```
 
@@ -38,35 +46,37 @@ Since this project uses the PHP Slim 4 Framework for API routing:
 1.  Open `http://localhost/phpmyadmin/`.
 2.  Click on the **SQL** tab at the top.
 3.  Paste the following commands to initialize the database and user:
-    ```sql
-    CREATE DATABASE IF NOT EXISTS cpad_03_strange;
-    USE cpad_03_strange;
-    CREATE USER IF NOT EXISTS 'cpad'@'localhost' IDENTIFIED BY 'cpadPassword';
-    GRANT ALL PRIVILEGES ON cpad_03_strange.* TO 'cpad'@'localhost';
-    FLUSH PRIVILEGES;
-    ```
-4.  Open your `cpad_03_strange.sql` file, copy all content, and paste it **after** the code above.
+     ```sql
+     CREATE DATABASE IF NOT EXISTS cpad_03_strange;
+     USE cpad_03_strange;
+     CREATE USER IF NOT EXISTS 'cpad'@'localhost' IDENTIFIED BY 'cpadPassword';
+     GRANT ALL PRIVILEGES ON cpad_03_strange.* TO 'cpad'@'localhost';
+     FLUSH PRIVILEGES;
+     ```
+4.  Open the SQL dump file located at `strange-3/database/cpad_03_Strange.sql`, copy all content, and paste it **after** the code above.
 5.  Click **Go**.
 
 #### Method B: Using MySQL Command Line
 1.  Open your terminal or XAMPP Shell.
-2.  Log in to MySQL 
-3.  Run the following commands:
-    ```sql
-    CREATE DATABASE IF NOT EXISTS cpad_03_strange;
-    USE cpad_03_strange;
-    CREATE USER IF NOT EXISTS 'cpad'@'localhost' IDENTIFIED BY 'cpadPassword';
-    GRANT ALL PRIVILEGES ON cpad_03_strange.* TO 'cpad'@'localhost';
-    FLUSH PRIVILEGES;
-    SOURCE c:/path/to/your/cpad_03_strange.sql;
-    ```
+2.  Log in to MySQL.
+3.  Run the following commands (adjusting the SQL source path to your local absolute path):
+     ```sql
+     CREATE DATABASE IF NOT EXISTS cpad_03_strange;
+     USE cpad_03_strange;
+     CREATE USER IF NOT EXISTS 'cpad'@'localhost' IDENTIFIED BY 'cpadPassword';
+     GRANT ALL PRIVILEGES ON cpad_03_strange.* TO 'cpad'@'localhost';
+     FLUSH PRIVILEGES;
+     SOURCE C:/xampp/htdocs/cpad-project/strange-3/database/cpad_03_Strange.sql;
+     ```
 
 
 ## Database Backup
-To back up the database for submission, use:
+To back up the database for submission, run from the command line:
 
-mariadb-dump --user=cpad --password cpad_03_strange > cpad_03_strange.sql
+```bash
+mariadb-dump --user=cpad --password cpad_03_strange > strange-3/database/cpad_03_Strange.sql
+```
 or
-mysql-dump --user=cpad --password cpad_03_strange > cpad_03_strange.sql
-
-
+```bash
+mysqldump --user=cpad --password cpad_03_strange > strange-3/database/cpad_03_Strange.sql
+```
