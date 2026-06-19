@@ -41,8 +41,8 @@
         <div v-else class="profile-layout">
           <aside class="profile-summary">
             <div class="profile-avatar">{{ profileInitials }}</div>
-            <h3>{{ profileForm.name || currentUser.name }}</h3>
-            <p>{{ profileForm.phone || currentUser.phone }}</p>
+            <h3>{{ currentUser.name }}</h3>
+            <p>{{ currentUser.phone }}</p>
             <a class="small-action" href="my_orders.php">View Orders</a>
           </aside>
 
@@ -227,7 +227,7 @@
         };
 
         const profileInitials = computed(() => {
-          const name = profileForm.value.name || currentUser.value?.name || 'US';
+          const name = currentUser.value?.name || 'US';
           return name
             .split(/\s|_/)
             .filter(Boolean)

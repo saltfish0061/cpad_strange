@@ -13,9 +13,9 @@
   <div id="app">
     <main class="app-shell">
       <?php
-        $root_path = "../../";
-        $active_page = "menu";
-        include '../../includes/customer_header.php';
+      $root_path = "../../";
+      $active_page = "menu";
+      include '../../includes/customer_header.php';
       ?>
 
       <section class="page section">
@@ -29,22 +29,12 @@
 
         <div class="menu-controls">
           <div class="categories">
-            <button 
-              v-for="cat in ['all', 'food', 'drink']" 
-              :key="cat"
-              class="category-btn"
-              :class="{ active: selectedCategory === cat }"
-              @click="selectedCategory = cat"
-            >
+            <button v-for="cat in ['all', 'food', 'drink']" :key="cat" class="category-btn"
+              :class="{ active: selectedCategory === cat }" @click="selectedCategory = cat">
               {{ cat.toUpperCase() }}
             </button>
           </div>
-          <input 
-            type="text" 
-            v-model="searchQuery" 
-            placeholder="Search for food or drinks..." 
-            class="search-input"
-          >
+          <input type="text" v-model="searchQuery" placeholder="Search for food or drinks..." class="search-input">
         </div>
 
         <div v-if="loading" class="empty-panel">
@@ -65,24 +55,24 @@
               <p class="meta">{{ item.description }}</p>
               <div class="price-row">
                 <span>RM {{ parseFloat(item.price).toFixed(2) }}</span>
-                <div v-if="cart[item.item_id] > 0" class="qty-controls">
-                  <button class="qty-btn" @click="decreaseQty(item.item_id)">-</button>
-                  <span class="qty-val">{{ cart[item.item_id] }}</span>
-                  <button class="qty-btn" @click="increaseQty(item.item_id)">+</button>
-                </div>
-                <button v-else class="add-button" type="button" @click="increaseQty(item.item_id)" aria-label="Add item">+</button>
+                <transition name="cart-control" mode="out-in">
+                  <div v-if="cart[item.item_id] > 0" class="qty-controls" :key="`qty-${item.item_id}`">
+                    <button class="qty-btn" type="button" @click="decreaseQty(item.item_id)">-</button>
+                    <span class="qty-val">{{ cart[item.item_id] }}</span>
+                    <button class="qty-btn" type="button" @click="increaseQty(item.item_id)">+</button>
+                  </div>
+                  <button v-else class="add-button" :key="`add-${item.item_id}`" type="button"
+                    @click="increaseQty(item.item_id)" aria-label="Add item">+</button>
+                </transition>
               </div>
             </div>
           </article>
         </div>
 
-        <div class="menu-checkout-container" style="display: flex; justify-content: center; margin-top: 40px; margin-bottom: 20px;">
-          <button 
-            class="cta" 
-            :disabled="cartIsEmpty"
-            @click="goToCheckout"
-            style="width: 100%; max-width: 320px; text-align: center; border: 0;"
-          >
+        <div class="menu-checkout-container"
+          style="display: flex; justify-content: center; margin-top: 40px; margin-bottom: 20px;">
+          <button class="cta" :disabled="cartIsEmpty" @click="goToCheckout"
+            style="width: 100%; max-width: 320px; text-align: center; border: 0;">
             Proceed to Checkout ({{ cartCount }} {{ cartCount === 1 ? 'item' : 'items' }})
           </button>
         </div>
@@ -118,6 +108,10 @@
 
         const saveCart = () => {
           localStorage.setItem('cart', JSON.stringify(cart.value));
+
+          if (typeof syncHeaderCartCount === 'function') {
+            syncHeaderCartCount();
+          }
         };
 
         const fetchMenu = async () => {
@@ -157,7 +151,8 @@
             'D002': '../../images/drink/carrot.png',
             'D003': '../../images/drink/carrot_susu.png',
             'D004': '../../images/drink/tembikai.png',
-            'D005': '../../images/drink/tembikai_susu.png'
+            'D005': '../../images/drink/tembikai_susu.png',
+            'D006': '../../images/drink/apple.png'
           };
           return images[itemId] || '../../images/food/test.png';
         };
@@ -169,6 +164,9 @@
             cart.value[itemId] = 1;
           }
           saveCart();
+          if (typeof animateHeaderCartWiggle === 'function') {
+            animateHeaderCartWiggle();
+          }
         };
 
         const decreaseQty = (itemId) => {
@@ -178,6 +176,9 @@
               delete cart.value[itemId];
             }
             saveCart();
+            if (typeof animateHeaderCartWiggle === 'function') {
+              animateHeaderCartWiggle();
+            }
           }
         };
 

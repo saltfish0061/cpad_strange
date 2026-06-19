@@ -23,7 +23,6 @@
         <section class="landing-top">
           <div class="page hero">
             <div class="hero-copy">
-              <p class="eyebrow">Online food and drink ordering</p>
               <h1>Want to get constipated? Try ours</h1>
               <p class="hero-text">
                 A base customer interface for Universal Sambal. Browse the menu, add items to cart,
@@ -38,6 +37,16 @@
               <div class="food-stage">
                 <div class="food-backdrop"></div>
                 <img class="hero-food" src="images/food/test.png" alt="Ayam geprek sambal merah">
+                <article class="hero-rating-card rating-top">
+                  <div class="rating-stars" aria-label="5 out of 5 stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                  <p>"I swear on my life, this is the best sambal I have ever tasted, even the delivery was quick."</p>
+                  <strong>TungTungSahere03</strong>
+                </article>
+                <article class="hero-rating-card rating-bottom">
+                  <div class="rating-stars" aria-label="5 out of 5 stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                  <p>"I can't lie, the chicken is actually crispy, the batter is good too, not too salty, thought it's all hype LOL, drinks were cold, and checkout was simple."</p>
+                  <strong>saranghaeminji69</strong>
+                </article>
               </div>
             </div>
           </div>
@@ -88,6 +97,35 @@
           </div>
         </section>
 
+        <section class="page section">
+          <div class="section-head top-picks">
+            <div>
+              <h2>Our Top Picks</h2>
+            </div>
+          </div>
+
+          <div class="card-grid">
+            <article class="food-card" v-for="item in topPickItems" :key="item.item_id">
+              <img :src="getItemImage(item.item_id)" :alt="item.name">
+              <div class="food-card-body">
+                <h3>{{ item.name }}</h3>
+                <p class="meta">{{ item.description }}</p>
+                <div class="price-row">
+                  <span>RM {{ parseFloat(item.price).toFixed(2) }}</span>
+                  <transition name="cart-control" mode="out-in">
+                    <div v-if="cart[item.item_id] > 0" class="qty-controls" :key="`qty-${item.item_id}`">
+                      <button class="qty-btn" type="button" @click="decreaseQty(item.item_id)">-</button>
+                      <span class="qty-val">{{ cart[item.item_id] }}</span>
+                      <button class="qty-btn" type="button" @click="increaseQty(item.item_id)">+</button>
+                    </div>
+                    <button v-else class="add-button" :key="`add-${item.item_id}`" type="button" @click="increaseQty(item.item_id)" aria-label="Add item">+</button>
+                  </transition>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
         <section class="category-band">
           <div class="page section category-layout">
             <div class="section-head">
@@ -118,30 +156,6 @@
             </div>
           </div>
         </section>
-
-        <section class="page section">
-          <div class="section-head">
-            <div>
-              <p class="eyebrow">Preview cards</p>
-              <h2>Top Picks</h2>
-            </div>
-            <p>Add these top-selling meals and drinks straight to your cart.</p>
-          </div>
-
-          <div class="card-grid">
-            <article class="food-card" v-for="item in previewItems" :key="item.item_id">
-              <img :src="item.image" :alt="item.name">
-              <div class="food-card-body">
-                <h3>{{ item.name }}</h3>
-                <p class="meta">{{ item.category }} preview item</p>
-                <div class="price-row">
-                  <span>{{ item.price }}</span>
-                  <a href="src/customer/menu.php" class="cta" style="min-height: 36px; padding: 0 16px; font-size: 13px; width: auto; margin-top: 0;">Order Now</a>
-                </div>
-              </div>
-            </article>
-          </div>
-        </section>
       </div>
 
       <footer class="footer">
@@ -156,6 +170,9 @@
     createApp({
       setup() {
         const currentUser = ref(null);
+        const cart = ref({});
+        const menuItems = ref([]);
+        const topPickIds = ['F001', 'F002', 'D005'];
 
         const loadCurrentUser = () => {
           try {
@@ -166,41 +183,108 @@
           }
         };
 
-        onMounted(() => {
-          loadCurrentUser();
-          window.addEventListener('storage', loadCurrentUser);
-        });
+        const loadCart = () => {
+          try {
+            const savedCart = localStorage.getItem('cart');
+            cart.value = savedCart ? JSON.parse(savedCart) : {};
+          } catch (e) {
+            cart.value = {};
+          }
+        };
+
+        const saveCart = () => {
+          localStorage.setItem('cart', JSON.stringify(cart.value));
+          if (typeof syncHeaderCartCount === 'function') {
+            syncHeaderCartCount();
+          }
+        };
+
+        const fetchMenu = async () => {
+          try {
+            const res = await fetch('api/menu');
+            const data = await res.json();
+            if (data.status === 'success') {
+              menuItems.value = data.items;
+            }
+          } catch (e) {
+            console.error('Error fetching top picks:', e);
+          }
+        };
 
         const isVendor = computed(() => currentUser.value?.role === 'admin');
 
-        const previewItems = [
-          {
-            item_id: 'F001',
-            name: 'Ayam Geprek Sambal Merah',
-            category: 'Food',
-            price: 'RM 11.20',
-            image: 'images/food/ayam_merah.png'
-          },
-          {
-            item_id: 'F002',
-            name: 'Ayam Geprek Sambal Hijau',
-            category: 'Food',
-            price: 'RM 11.20',
-            image: 'images/food/ayam_hijau.png'
-          },
-          {
-            item_id: 'D005',
-            name: 'Jus Tembikai Susu Ice',
-            category: 'Drink',
-            price: 'RM 6.40',
-            image: 'images/drink/tembikai_susu.png'
+        const topPickItems = computed(() => {
+          const selectedItems = topPickIds
+            .map((itemId) => menuItems.value.find((item) => item.item_id === itemId))
+            .filter(Boolean);
+
+          return selectedItems.length === topPickIds.length
+            ? selectedItems
+            : menuItems.value.slice(0, 3);
+        });
+
+        const getItemImage = (itemId) => {
+          const images = {
+            'F001': 'images/food/ayam_merah.png',
+            'F002': 'images/food/ayam_hijau.png',
+            'F003': 'images/food/brownsugar.png',
+            'F004': 'images/food/harimau.png',
+            'F005': 'images/food/bawean.png',
+            'F006': 'images/food/2rasa.png',
+            'F007': 'images/food/3rasa.png',
+            'D001': 'images/drink/orange.png',
+            'D002': 'images/drink/carrot.png',
+            'D003': 'images/drink/carrot_susu.png',
+            'D004': 'images/drink/tembikai.png',
+            'D005': 'images/drink/tembikai_susu.png',
+            'D006': 'images/drink/apple.png'
+          };
+          return images[itemId] || 'images/food/test.png';
+        };
+
+        const increaseQty = (itemId) => {
+          if (cart.value[itemId]) {
+            cart.value[itemId]++;
+          } else {
+            cart.value[itemId] = 1;
           }
-        ];
+          saveCart();
+          if (typeof animateHeaderCartWiggle === 'function') {
+            animateHeaderCartWiggle();
+          }
+        };
+
+        const decreaseQty = (itemId) => {
+          if (cart.value[itemId]) {
+            cart.value[itemId]--;
+            if (cart.value[itemId] <= 0) {
+              delete cart.value[itemId];
+            }
+            saveCart();
+            if (typeof animateHeaderCartWiggle === 'function') {
+              animateHeaderCartWiggle();
+            }
+          }
+        };
+
+        onMounted(() => {
+          loadCurrentUser();
+          loadCart();
+          fetchMenu();
+          window.addEventListener('storage', () => {
+            loadCurrentUser();
+            loadCart();
+          });
+        });
 
         return {
+          cart,
           currentUser,
+          decreaseQty,
+          getItemImage,
+          increaseQty,
           isVendor,
-          previewItems
+          topPickItems
         };
       }
     }).mount('#app');

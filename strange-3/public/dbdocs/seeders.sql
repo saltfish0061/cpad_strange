@@ -3,10 +3,11 @@
 -- Insert into menus
 INSERT INTO `menus` VALUES 
 ('D001','Jus Oren Ice','Chilled orange juice',5.90,'drink',1),
-('D002','Jus Carrot Ice','freshly squeezed carrot juice',4.90,'drink',1),
+('D002','Jus Carrot Ice','Freshly squeezed carrot juice',4.90,'drink',1),
 ('D003','Jus Carrot Susu Ice','Chilled carrot juice with milk',5.40,'drink',1),
 ('D004','Jus Tembikai Ice','Chilled watermelon juice',5.90,'drink',1),
 ('D005','Jus Tembikai Susu Ice','Chilled watermelon juice with milk',6.40,'drink',1),
+('D006','Jus Epal Ice','Chilled apple juice',5.90,'drink',1),
 ('F001','Ayam Geprek Sambal Merah','Ayam geprek with spicy red hot chili',11.20,'food',1),
 ('F002','Ayam Geprek Sambal Hijau','Ayam geprek with mild-spicy green chili',11.20,'food',1),
 ('F003','Ayam Geprek Sambal Brown Sugar','Ayam geprek with sweet & spicy taste',11.20,'food',1),

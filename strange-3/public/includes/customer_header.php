@@ -7,7 +7,7 @@
 ?>
 <header class="topbar">
   <a class="brand" href="<?php echo $root_path; ?>index.php" aria-label="Universal Sambal home">
-    <span class="brand-mark">US</span>
+    <img class="logo" src="<?php echo $root_path; ?>images/assets/logo.png" alt="Universal Sambal logo">
     <span>Universal Sambal</span>
   </a>
 
@@ -120,4 +120,17 @@
     syncHeaderVendorLink();
     syncHeaderAuth();
   }, 1000);
+
+  const animateHeaderCartWiggle = () => {
+    const cartButton = document.querySelector('.cart-button');
+    if (!cartButton) return;
+
+    cartButton.classList.remove('cart-wiggle');
+    void cartButton.offsetWidth;
+    cartButton.classList.add('cart-wiggle');
+
+    window.setTimeout(() => {
+      cartButton.classList.remove('cart-wiggle');
+    }, 450);
+  };
 </script>
