@@ -24,7 +24,15 @@ This is a web-based Online Food & Drink Ordering System designed to centralize a
 1.  Clone the repository into your XAMPP `htdocs` folder.
 2.  Start **Apache** and **MySQL** from the XAMPP Control Panel.
 
-### 2. Database Setup (Choose ONE method below)
+### 2. Install Dependencies
+Since this project uses the PHP Slim 4 Framework for API routing:
+1. Make sure you have **Composer** installed.
+2. Open your terminal in the project root folder and run:
+   ```bash
+   composer install
+   ```
+
+### 3. Database Setup (Choose ONE method below)
 
 #### Method A: Using phpMyAdmin (SQL Tab)
 1.  Open `http://localhost/phpmyadmin/`.
