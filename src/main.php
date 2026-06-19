@@ -128,22 +128,23 @@ $app->post('/api/login', function (Request $request, Response $response) use ($d
 
     try {
         $stmt = $db_conn->prepare(
-            'SELECT user_id, name, role, phone FROM users
-             WHERE (name = :identifier OR user_id = :identifier) AND password = :password
+            'SELECT user_id, name, password, role, phone FROM users
+             WHERE name = :identifier OR user_id = :identifier
              LIMIT 1'
         );
         $stmt->execute([
             'identifier' => $identifier,
-            'password' => $password,
         ]);
 
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (!$user) {
+        if (!$user || $password !== $user['password']) {
             return jsonResponse($response, [
                 'error' => 'Invalid login credentials.',
             ], 401);
         }
+
+        unset($user['password']);
 
         return jsonResponse($response, [
             'message' => 'Login successful.',
@@ -152,6 +153,142 @@ $app->post('/api/login', function (Request $request, Response $response) use ($d
     } catch (Throwable $error) {
         return jsonResponse($response, [
             'error' => 'Unable to login right now.',
+        ], 500);
+    }
+});
+
+$app->get('/api/profile/{user_id}', function (Request $request, Response $response, array $args) use ($db_conn) {
+    try {
+        $stmt = $db_conn->prepare('SELECT user_id, name, role, phone FROM users WHERE user_id = ? LIMIT 1');
+        $stmt->execute([$args['user_id']]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$user) {
+            return jsonResponse($response, [
+                'status' => 'error',
+                'message' => 'Profile not found.',
+            ], 404);
+        }
+
+        return jsonResponse($response, [
+            'status' => 'success',
+            'user' => $user,
+        ]);
+    } catch (Throwable $error) {
+        return jsonResponse($response, [
+            'status' => 'error',
+            'message' => 'Unable to load profile.',
+        ], 500);
+    }
+});
+
+$app->put('/api/profile/{user_id}', function (Request $request, Response $response, array $args) use ($db_conn) {
+    $body = parsedBody($request);
+    $name = trim((string) ($body['name'] ?? ''));
+    $phone = trim((string) ($body['phone'] ?? ''));
+    $errors = [];
+
+    if ($name === '') {
+        $errors[] = 'Name is required.';
+    }
+
+    if ($phone === '') {
+        $errors[] = 'Phone number is required.';
+    }
+
+    if ($errors) {
+        return jsonResponse($response, [
+            'status' => 'error',
+            'errors' => $errors,
+        ], 422);
+    }
+
+    try {
+        $exists = $db_conn->prepare('SELECT COUNT(*) FROM users WHERE user_id = ?');
+        $exists->execute([$args['user_id']]);
+
+        if ((int) $exists->fetchColumn() === 0) {
+            return jsonResponse($response, [
+                'status' => 'error',
+                'message' => 'Profile not found.',
+            ], 404);
+        }
+
+        $stmt = $db_conn->prepare('UPDATE users SET name = ?, phone = ? WHERE user_id = ?');
+        $stmt->execute([$name, $phone, $args['user_id']]);
+
+        $profileStmt = $db_conn->prepare('SELECT user_id, name, role, phone FROM users WHERE user_id = ? LIMIT 1');
+        $profileStmt->execute([$args['user_id']]);
+
+        return jsonResponse($response, [
+            'status' => 'success',
+            'message' => 'Profile updated.',
+            'user' => $profileStmt->fetch(PDO::FETCH_ASSOC),
+        ]);
+    } catch (Throwable $error) {
+        return jsonResponse($response, [
+            'status' => 'error',
+            'message' => 'Unable to update profile.',
+        ], 500);
+    }
+});
+
+$app->patch('/api/profile/{user_id}/password', function (Request $request, Response $response, array $args) use ($db_conn) {
+    $body = parsedBody($request);
+    $oldPassword = trim((string) ($body['old_password'] ?? ''));
+    $newPassword = trim((string) ($body['new_password'] ?? ''));
+    $confirmPassword = trim((string) ($body['confirm_password'] ?? ''));
+    $errors = [];
+
+    if ($oldPassword === '') {
+        $errors[] = 'Old password is required.';
+    }
+
+    if (strlen($newPassword) < 4) {
+        $errors[] = 'New password must be at least 4 characters.';
+    }
+
+    if ($newPassword !== $confirmPassword) {
+        $errors[] = 'New passwords do not match.';
+    }
+
+    if ($errors) {
+        return jsonResponse($response, [
+            'status' => 'error',
+            'errors' => $errors,
+        ], 422);
+    }
+
+    try {
+        $stmt = $db_conn->prepare('SELECT password FROM users WHERE user_id = ? LIMIT 1');
+        $stmt->execute([$args['user_id']]);
+        $currentPassword = $stmt->fetchColumn();
+
+        if ($currentPassword === false) {
+            return jsonResponse($response, [
+                'status' => 'error',
+                'message' => 'Profile not found.',
+            ], 404);
+        }
+
+        if ($oldPassword !== $currentPassword) {
+            return jsonResponse($response, [
+                'status' => 'error',
+                'message' => 'Old password is incorrect.',
+            ], 422);
+        }
+
+        $update = $db_conn->prepare('UPDATE users SET password = ? WHERE user_id = ?');
+        $update->execute([$newPassword, $args['user_id']]);
+
+        return jsonResponse($response, [
+            'status' => 'success',
+            'message' => 'Password updated.',
+        ]);
+    } catch (Throwable $error) {
+        return jsonResponse($response, [
+            'status' => 'error',
+            'message' => 'Unable to update password.',
         ], 500);
     }
 });
