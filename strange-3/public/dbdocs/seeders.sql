@@ -1,4 +1,4 @@
--- MariaDB Database Seeders (Sample Data) for cpad_03_strange
+-- MySQL Database Seeders (Sample Data) for cpad_03_strange
 
 -- Insert into menus
 INSERT INTO `menus` VALUES 

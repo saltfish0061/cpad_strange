@@ -78,9 +78,9 @@ Since this project uses the PHP Slim 4 Framework for API routing:
 To back up the database for submission, run from the command line:
 
 ```bash
-mariadb-dump --user=cpad --password=cpadPassword cpad_03_strange > strange-3/public/dbdocs/cpad_03_Strange.sql
+mariadb-dump --user=cpad --password cpad_03_strange > strange-3/public/dbdocs/cpad_03_Strange.sql
 ```
 or
 ```bash
-mysqldump --user=cpad --password=cpadPassword cpad_03_strange > strange-3/public/dbdocs/cpad_03_Strange.sql
+mysqldump --user=cpad --password cpad_03_strange > strange-3/public/dbdocs/cpad_03_Strange.sql
 ```

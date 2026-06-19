@@ -11,5 +11,5 @@ Instructions for Team Members:
 - Try to update these files directly so team members can import them easily when updating their local environments.
 - **Before final submission or final update**, please regenerate the complete database backup file (`cpad_03_Strange.sql`) using:
   ```bash
-  mysqldump --user=cpad --password cpad_03_strange > cpad_03_Strange.sql
+  mysqldump --user=cpad --password cpad_03_strange > strange-3/public/dbdocs/cpad_03_Strange.sql
   ```

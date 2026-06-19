@@ -1,4 +1,4 @@
--- MariaDB Database Schema for cpad_03_strange
+-- MySQL Database Schema for cpad_03_strange
 
 CREATE TABLE IF NOT EXISTS `menus` (
   `item_id` varchar(20) NOT NULL,
