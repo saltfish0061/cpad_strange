@@ -1,13 +1,13 @@
--- MariaDB dump 10.19  Distrib 10.4.32-MariaDB, for Win64 (AMD64)
+-- MySQL dump 10.13  Distrib 8.4.3, for Win64 (x86_64)
 --
 -- Host: localhost    Database: cpad_03_strange
 -- ------------------------------------------------------
--- Server version	10.4.32-MariaDB
+-- Server version	5.5.5-10.4.32-MariaDB
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
+/*!50503 SET NAMES utf8mb4 */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
@@ -21,7 +21,7 @@
 
 DROP TABLE IF EXISTS `menus`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `menus` (
   `item_id` varchar(20) NOT NULL,
   `name` varchar(50) NOT NULL,
@@ -49,7 +49,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `order_items`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `order_items` (
   `order_item_id` varchar(20) NOT NULL,
   `order_id` varchar(20) NOT NULL,
@@ -80,7 +80,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `orders`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `orders` (
   `order_id` varchar(20) NOT NULL,
   `user_id` varchar(20) NOT NULL,
@@ -109,7 +109,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `users`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `users` (
   `user_id` varchar(20) NOT NULL,
   `name` varchar(50) NOT NULL,
@@ -126,7 +126,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES ('A001','Admin','admin123','admin','0137461935'),('A002','Vendor','vendor123','admin','0158163956'),('C001','Customer','customer123','customer','0157164916'),('C002','Muhammad','abcdefg','customer','0183472383'),('C003','Danial','ABCDEFG','customer','0147153852'),('C004','Afiq','1234567','customer','0183649261'),('C005','Siang','siangmalam','customer','0117461835'),('C006','Ng','NotGood','customer','0147528251'),('C007','Wei','24681357','customer','0192715418');
+INSERT INTO `users` VALUES ('A001','Admin_Geprek','Geprek4ever','admin','0137461935'),('A002','Admin_Sambal','Sambal4ever','admin','0158163956'),('C001','Saltfish','wwww2333','customer','0157164916'),('C002','Muhammad','abcdefg','customer','0183472383'),('C003','Danial','ABCDEFG','customer','0147153852'),('C004','Afiq','1234567','customer','0183649261'),('C005','Siang','siangmalam','customer','0117461835'),('C006','Ng','NotGood','customer','0147528251'),('C007','Wei','24681357','customer','0192715418');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -139,4 +139,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-05-15 13:41:12
+-- Dump completed on 2026-06-19 22:13:38
