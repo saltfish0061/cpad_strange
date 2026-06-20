@@ -103,7 +103,7 @@
       </section>
 
       <footer class="footer">
-        Universal Sambal Menu. Refined Customer flow.
+        Universal Sambal Menu.
       </footer>
     </main>
   </div>

@@ -72,7 +72,7 @@
       </section>
 
       <footer class="footer">
-        Universal Sambal Orders. Refined Customer flow.
+        Universal Sambal Orders.
       </footer>
     </main>
   </div>

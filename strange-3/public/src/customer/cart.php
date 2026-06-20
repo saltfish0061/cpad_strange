@@ -89,7 +89,7 @@
       </section>
 
       <footer class="footer">
-        Universal Sambal Cart. Refined Customer flow.
+        Universal Sambal Cart.
       </footer>
     </main>
   </div>
