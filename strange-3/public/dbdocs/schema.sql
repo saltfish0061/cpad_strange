@@ -16,14 +16,18 @@ CREATE TABLE IF NOT EXISTS `users` (
   `password` varchar(255) DEFAULT NULL,
   `role` enum('admin','customer') NOT NULL DEFAULT 'customer',
   `phone` varchar(20) DEFAULT NULL,
-  PRIMARY KEY (`user_id`)
+  `address` text DEFAULT NULL,
+  PRIMARY KEY (`user_id`),
+  UNIQUE KEY `users_name_unique` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE IF NOT EXISTS `orders` (
   `order_id` varchar(20) NOT NULL,
   `user_id` varchar(20) NOT NULL,
   `total_amount` decimal(10,2) NOT NULL,
-  `status` enum('pending','preparing','ready','completed','cancelled') DEFAULT 'pending',
+  `status` enum('pending','preparing','ready','on_the_way','completed','cancelled') DEFAULT 'pending',
+  `delivery_method` enum('pickup','delivery') NOT NULL DEFAULT 'pickup',
+  `order_note` text DEFAULT NULL,
   `order_date` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`order_id`),
   KEY `user_id` (`user_id`),

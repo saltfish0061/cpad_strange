@@ -54,6 +54,16 @@
 
           <div class="cart-summary-card">
             <h3>Order Summary</h3>
+            <div class="form-group">
+              <label for="order-note">Order Note</label>
+              <textarea
+                id="order-note"
+                v-model="orderNote"
+                class="form-control"
+                placeholder="Optional note for the vendor..."
+                @input="saveOrderNote"
+              ></textarea>
+            </div>
             <div class="summary-row">
               <span>Subtotal</span>
               <span>RM {{ cartTotal.toFixed(2) }}</span>
@@ -66,8 +76,15 @@
               <span>Total</span>
               <span>RM {{ cartTotal.toFixed(2) }}</span>
             </div>
-            <a class="cta" href="checkout.php">Proceed to Checkout</a>
           </div>
+        </div>
+
+        <div v-if="!cartIsEmpty" class="floating-checkout-bar">
+          <div>
+            <span>{{ cartCount }} {{ cartCount === 1 ? 'item' : 'items' }}</span>
+            <strong>RM {{ cartTotal.toFixed(2) }}</strong>
+          </div>
+          <a class="cta" href="checkout.php">Proceed to Checkout</a>
         </div>
       </section>
 
@@ -84,6 +101,7 @@
       setup() {
         const cart = ref({});
         const menuItems = ref([]);
+        const orderNote = ref('');
 
         const loadCart = () => {
           try {
@@ -98,6 +116,38 @@
 
         const saveCart = () => {
           localStorage.setItem('cart', JSON.stringify(cart.value));
+
+          if (typeof syncHeaderCartCount === 'function') {
+            syncHeaderCartCount();
+          }
+        };
+
+        const removeUnavailableCartItems = () => {
+          const availableIds = new Set(
+            menuItems.value
+              .filter((item) => Number(item.is_available))
+              .map((item) => item.item_id)
+          );
+          let changed = false;
+
+          for (const itemId of Object.keys(cart.value)) {
+            if (!availableIds.has(itemId)) {
+              delete cart.value[itemId];
+              changed = true;
+            }
+          }
+
+          if (changed) {
+            saveCart();
+          }
+        };
+
+        const loadOrderNote = () => {
+          orderNote.value = localStorage.getItem('orderNote') || '';
+        };
+
+        const saveOrderNote = () => {
+          localStorage.setItem('orderNote', orderNote.value);
         };
 
         const cartIsEmpty = computed(() => {
@@ -106,10 +156,11 @@
 
         const fetchMenu = async () => {
           try {
-            const res = await fetch('../../api/menu');
+            const res = await fetch('../../api/menu?include_unavailable=1');
             const data = await res.json();
             if (data.status === 'success') {
               menuItems.value = data.items;
+              removeUnavailableCartItems();
             }
           } catch (e) {
             console.error('Error fetching menu:', e);
@@ -139,6 +190,9 @@
             cart.value[itemId]++;
           }
           saveCart();
+          if (typeof animateHeaderCartWiggle === 'function') {
+            animateHeaderCartWiggle();
+          }
         };
 
         const decreaseQty = (itemId) => {
@@ -148,6 +202,9 @@
               delete cart.value[itemId];
             }
             saveCart();
+            if (typeof animateHeaderCartWiggle === 'function') {
+            animateHeaderCartWiggle();
+          }
           }
         };
 
@@ -183,19 +240,27 @@
           return cartItemsList.value.reduce((sum, item) => sum + item.subtotal, 0);
         });
 
+        const cartCount = computed(() => {
+          return Object.values(cart.value).reduce((sum, qty) => sum + qty, 0);
+        });
+
         onMounted(() => {
           loadCart();
+          loadOrderNote();
           fetchMenu();
         });
 
         return {
           cartIsEmpty,
           cartItemsList,
+          cartCount,
           cartTotal,
           increaseQty,
           decreaseQty,
           removeItem,
-          getItemImage
+          getItemImage,
+          orderNote,
+          saveOrderNote
         };
       }
     }).mount('#app');

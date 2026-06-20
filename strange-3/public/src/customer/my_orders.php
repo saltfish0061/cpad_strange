@@ -64,7 +64,7 @@
               </p>
             </div>
             <div style="display: flex; align-items: center; gap: 20px;">
-              <span class="status-badge" :class="order.status">{{ order.status }}</span>
+              <span class="status-badge" :class="order.status">{{ formatOrderStatus(order.status) }}</span>
               <a class="cta" :href="'order_details.php?id=' + order.order_id" style="padding: 6px 16px; font-size: 13px; min-height: 34px;">View Details</a>
             </div>
           </div>
@@ -83,9 +83,19 @@
     createApp({
       setup() {
         const cartCount = ref(0);
+        const currentUser = ref(null);
         const orders = ref([]);
         const loading = ref(false);
         const orderTab = ref('active');
+
+        const loadCurrentUser = () => {
+          try {
+            const savedUser = localStorage.getItem('currentUser');
+            currentUser.value = savedUser ? JSON.parse(savedUser) : null;
+          } catch (e) {
+            currentUser.value = null;
+          }
+        };
 
         const loadCartCount = () => {
           try {
@@ -100,9 +110,14 @@
         };
 
         const fetchOrders = async () => {
+          if (!currentUser.value?.user_id) {
+            orders.value = [];
+            return;
+          }
+
           loading.value = true;
           try {
-            const res = await fetch('../../api/orders');
+            const res = await fetch(`../../api/orders?user_id=${encodeURIComponent(currentUser.value.user_id)}`);
             const data = await res.json();
             if (data.status === 'success') {
               orders.value = data.orders;
@@ -116,19 +131,34 @@
 
         const filteredOrders = computed(() => {
           return orders.value.filter(order => {
-            const isActive = ['pending', 'preparing', 'ready'].includes(order.status);
+            const isActive = ['pending', 'preparing', 'ready', 'on_the_way'].includes(order.status);
             return orderTab.value === 'active' ? isActive : !isActive;
           });
         });
 
+        const formatOrderStatus = (status) => {
+          const labels = {
+            pending: 'Pending',
+            preparing: 'Preparing',
+            ready: 'Ready',
+            on_the_way: 'On the way',
+            completed: 'Completed',
+            cancelled: 'Cancelled'
+          };
+          return labels[status] || status;
+        };
+
         onMounted(() => {
+          loadCurrentUser();
           loadCartCount();
           fetchOrders();
         });
 
         return {
           cartCount,
+          currentUser,
           filteredOrders,
+          formatOrderStatus,
           loading,
           orderTab
         };

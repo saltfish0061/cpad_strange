@@ -57,6 +57,15 @@ function nextMenuItemId(PDO $db, string $category): string
     return $prefix . str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT);
 }
 
+function nextCustomerId(PDO $db): string
+{
+    $stmt = $db->query("SELECT user_id FROM users WHERE user_id LIKE 'C%' ORDER BY CAST(SUBSTRING(user_id, 2) AS UNSIGNED) DESC LIMIT 1");
+    $lastId = $stmt->fetchColumn();
+    $nextNumber = $lastId ? ((int) substr($lastId, 1)) + 1 : 1;
+
+    return 'C' . str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT);
+}
+
 function validateMenuPayload(array $body): array
 {
     $errors = [];
@@ -97,8 +106,16 @@ $app->get('/api/health', function (Request $request, Response $response) {
 
 $app->get('/api/menu', function (Request $request, Response $response) use ($db_conn) {
     try {
-        $stmt = $db_conn->prepare("SELECT * FROM menus WHERE is_available = 1 ORDER BY category, name");
-        $stmt->execute();
+        $params = $request->getQueryParams();
+        $includeUnavailable = (string) ($params['include_unavailable'] ?? '') === '1';
+
+        if ($includeUnavailable) {
+            $stmt = $db_conn->prepare("SELECT * FROM menus ORDER BY is_available DESC, category, name");
+            $stmt->execute();
+        } else {
+            $stmt = $db_conn->prepare("SELECT * FROM menus WHERE is_available = 1 ORDER BY category, name");
+            $stmt->execute();
+        }
         $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $response->getBody()->write(json_encode([
@@ -117,19 +134,19 @@ $app->get('/api/menu', function (Request $request, Response $response) use ($db_
 
 $app->post('/api/login', function (Request $request, Response $response) use ($db_conn) {
     $data = (array) $request->getParsedBody();
-    $identifier = trim($data['name'] ?? $data['user_id'] ?? '');
+    $identifier = trim($data['username'] ?? $data['name'] ?? $data['user_id'] ?? '');
     $password = trim($data['password'] ?? '');
 
     if ($identifier === '' || $password === '') {
         return jsonResponse($response, [
-            'error' => 'Name or user ID and password are required.',
+            'error' => 'Username and password are required.',
         ], 422);
     }
 
     try {
         $stmt = $db_conn->prepare(
-            'SELECT user_id, name, password, role, phone FROM users
-             WHERE name = :identifier OR user_id = :identifier
+            'SELECT user_id, name, password, role, phone, address FROM users
+             WHERE BINARY name = :identifier
              LIMIT 1'
         );
         $stmt->execute([
@@ -140,7 +157,7 @@ $app->post('/api/login', function (Request $request, Response $response) use ($d
 
         if (!$user || $password !== $user['password']) {
             return jsonResponse($response, [
-                'error' => 'Invalid login credentials.',
+                'error' => 'Username or password is wrong.',
             ], 401);
         }
 
@@ -157,9 +174,87 @@ $app->post('/api/login', function (Request $request, Response $response) use ($d
     }
 });
 
+$app->post('/api/register', function (Request $request, Response $response) use ($db_conn) {
+    $body = parsedBody($request);
+    $name = trim((string) ($body['username'] ?? $body['name'] ?? ''));
+    $phone = trim((string) ($body['phone'] ?? ''));
+    $address = trim((string) ($body['address'] ?? ''));
+    $password = trim((string) ($body['password'] ?? ''));
+    $confirmPassword = trim((string) ($body['confirm_password'] ?? ''));
+    $errors = [];
+
+    if ($name === '') {
+        $errors[] = 'Username is required.';
+    }
+
+    if ($phone === '') {
+        $errors[] = 'Phone number is required.';
+    }
+
+    if ($address === '') {
+        $errors[] = 'Address is required.';
+    }
+
+    if (strlen($password) < 4) {
+        $errors[] = 'Password must be at least 4 characters.';
+    }
+
+    if ($password !== $confirmPassword) {
+        $errors[] = 'Passwords do not match.';
+    }
+
+    if ($errors) {
+        return jsonResponse($response, [
+            'status' => 'error',
+            'errors' => $errors,
+        ], 422);
+    }
+
+    try {
+        $duplicateUsername = $db_conn->prepare('SELECT COUNT(*) FROM users WHERE name = ?');
+        $duplicateUsername->execute([$name]);
+        if ((int) $duplicateUsername->fetchColumn() > 0) {
+            return jsonResponse($response, [
+                'status' => 'error',
+                'message' => 'Username already exists.',
+            ], 409);
+        }
+
+        $duplicatePhone = $db_conn->prepare('SELECT COUNT(*) FROM users WHERE phone = ?');
+        $duplicatePhone->execute([$phone]);
+        if ((int) $duplicatePhone->fetchColumn() > 0) {
+            return jsonResponse($response, [
+                'status' => 'error',
+                'message' => 'An account with this phone already exists.',
+            ], 409);
+        }
+
+        $userId = nextCustomerId($db_conn);
+        $stmt = $db_conn->prepare(
+            "INSERT INTO users (user_id, name, password, role, phone, address)
+             VALUES (?, ?, ?, 'customer', ?, ?)"
+        );
+        $stmt->execute([$userId, $name, $password, $phone, $address]);
+
+        $userStmt = $db_conn->prepare('SELECT user_id, name, role, phone, address FROM users WHERE user_id = ? LIMIT 1');
+        $userStmt->execute([$userId]);
+
+        return jsonResponse($response, [
+            'status' => 'success',
+            'message' => 'Registration successful.',
+            'user' => $userStmt->fetch(PDO::FETCH_ASSOC),
+        ], 201);
+    } catch (Throwable $error) {
+        return jsonResponse($response, [
+            'status' => 'error',
+            'message' => 'Unable to register right now.',
+        ], 500);
+    }
+});
+
 $app->get('/api/profile/{user_id}', function (Request $request, Response $response, array $args) use ($db_conn) {
     try {
-        $stmt = $db_conn->prepare('SELECT user_id, name, role, phone FROM users WHERE user_id = ? LIMIT 1');
+        $stmt = $db_conn->prepare('SELECT user_id, name, role, phone, address FROM users WHERE user_id = ? LIMIT 1');
         $stmt->execute([$args['user_id']]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -186,6 +281,7 @@ $app->put('/api/profile/{user_id}', function (Request $request, Response $respon
     $body = parsedBody($request);
     $name = trim((string) ($body['name'] ?? ''));
     $phone = trim((string) ($body['phone'] ?? ''));
+    $address = trim((string) ($body['address'] ?? ''));
     $errors = [];
 
     if ($name === '') {
@@ -194,6 +290,10 @@ $app->put('/api/profile/{user_id}', function (Request $request, Response $respon
 
     if ($phone === '') {
         $errors[] = 'Phone number is required.';
+    }
+
+    if ($address === '') {
+        $errors[] = 'Address is required.';
     }
 
     if ($errors) {
@@ -214,10 +314,10 @@ $app->put('/api/profile/{user_id}', function (Request $request, Response $respon
             ], 404);
         }
 
-        $stmt = $db_conn->prepare('UPDATE users SET name = ?, phone = ? WHERE user_id = ?');
-        $stmt->execute([$name, $phone, $args['user_id']]);
+        $stmt = $db_conn->prepare('UPDATE users SET name = ?, phone = ?, address = ? WHERE user_id = ?');
+        $stmt->execute([$name, $phone, $address, $args['user_id']]);
 
-        $profileStmt = $db_conn->prepare('SELECT user_id, name, role, phone FROM users WHERE user_id = ? LIMIT 1');
+        $profileStmt = $db_conn->prepare('SELECT user_id, name, role, phone, address FROM users WHERE user_id = ? LIMIT 1');
         $profileStmt->execute([$args['user_id']]);
 
         return jsonResponse($response, [
@@ -295,7 +395,16 @@ $app->patch('/api/profile/{user_id}/password', function (Request $request, Respo
 
 $app->get('/api/orders', function (Request $request, Response $response) use ($db_conn) {
     try {
-        $user_id = 'C001'; // Mock customer session
+        $params = $request->getQueryParams();
+        $user_id = trim((string) ($params['user_id'] ?? ''));
+
+        if ($user_id === '') {
+            return jsonResponse($response, [
+                'status' => 'error',
+                'message' => 'User ID is required.',
+            ], 422);
+        }
+
         $stmt = $db_conn->prepare("SELECT * FROM orders WHERE user_id = ? ORDER BY order_date DESC");
         $stmt->execute([$user_id]);
         $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -317,7 +426,15 @@ $app->get('/api/orders', function (Request $request, Response $response) use ($d
 $app->get('/api/orders/{order_id}', function (Request $request, Response $response, array $args) use ($db_conn) {
     try {
         $order_id = $args['order_id'];
-        $user_id = 'C001'; // Mock customer session
+        $params = $request->getQueryParams();
+        $user_id = trim((string) ($params['user_id'] ?? ''));
+
+        if ($user_id === '') {
+            return jsonResponse($response, [
+                'status' => 'error',
+                'message' => 'User ID is required.',
+            ], 422);
+        }
 
         $stmt = $db_conn->prepare("SELECT * FROM orders WHERE order_id = ? AND user_id = ?");
         $stmt->execute([$order_id, $user_id]);
@@ -359,14 +476,29 @@ $app->post('/api/orders', function (Request $request, Response $response) use ($
     try {
         $body = $request->getParsedBody();
         $items = $body['items'] ?? [];
+        $user_id = trim((string) ($body['user_id'] ?? ''));
+        $order_note = trim((string) ($body['order_note'] ?? ''));
+        $delivery_method = strtolower(trim((string) ($body['delivery_method'] ?? 'pickup')));
+
+        if (!in_array($delivery_method, ['pickup', 'delivery'], true)) {
+            $delivery_method = 'pickup';
+        }
 
         if (empty($items)) {
             throw new \Exception("No items in the order.");
         }
 
-        $user_id = 'C001'; // Mock customer session
+        if ($user_id === '') {
+            throw new \Exception("Login is required to place an order.");
+        }
 
         $db_conn->beginTransaction();
+
+        $userCheck = $db_conn->prepare("SELECT COUNT(*) FROM users WHERE user_id = ?");
+        $userCheck->execute([$user_id]);
+        if ((int) $userCheck->fetchColumn() === 0) {
+            throw new \Exception("Customer profile was not found.");
+        }
 
         $total_amount = 0;
         $items_to_save = [];
@@ -399,8 +531,8 @@ $app->post('/api/orders', function (Request $request, Response $response) use ($
         $last_id = $stmt->fetchColumn();
         $order_id = $last_id ? sprintf("O%03d", (int)substr($last_id, 1) + 1) : "O001";
 
-        $stmt = $db_conn->prepare("INSERT INTO orders (order_id, user_id, total_amount, status) VALUES (?, ?, ?, 'pending')");
-        $stmt->execute([$order_id, $user_id, $total_amount]);
+        $stmt = $db_conn->prepare("INSERT INTO orders (order_id, user_id, total_amount, status, delivery_method, order_note) VALUES (?, ?, ?, 'pending', ?, ?)");
+        $stmt->execute([$order_id, $user_id, $total_amount, $delivery_method, $order_note]);
 
         $stmt = $db_conn->query("SELECT order_item_id FROM order_items WHERE order_item_id LIKE 'OI%' ORDER BY CAST(SUBSTRING(order_item_id, 3) AS UNSIGNED) DESC LIMIT 1");
         $last_oi_id = $stmt->fetchColumn();
@@ -573,12 +705,12 @@ $app->get('/api/vendor/orders', function (Request $request, Response $response) 
     try {
         $stmt = $db_conn->query(
             "SELECT o.order_id, o.user_id, u.name AS customer_name, u.phone AS customer_phone,
-                    o.total_amount, o.status, o.order_date,
+                    o.total_amount, o.status, o.delivery_method, o.order_note, o.order_date,
                     COUNT(oi.order_item_id) AS item_count
              FROM orders o
              JOIN users u ON u.user_id = o.user_id
              LEFT JOIN order_items oi ON oi.order_id = o.order_id
-             GROUP BY o.order_id, o.user_id, u.name, u.phone, o.total_amount, o.status, o.order_date
+             GROUP BY o.order_id, o.user_id, u.name, u.phone, o.total_amount, o.status, o.delivery_method, o.order_note, o.order_date
              ORDER BY o.order_date DESC, o.order_id DESC"
         );
 
@@ -598,7 +730,8 @@ $app->get('/api/vendor/orders/{order_id}', function (Request $request, Response 
     try {
         $orderStmt = $db_conn->prepare(
             "SELECT o.order_id, o.user_id, u.name AS customer_name, u.phone AS customer_phone,
-                    o.total_amount, o.status, o.order_date
+                    u.address AS customer_address, o.total_amount, o.status, o.delivery_method,
+                    o.order_note, o.order_date
              FROM orders o
              JOIN users u ON u.user_id = o.user_id
              WHERE o.order_id = ?"
@@ -639,7 +772,7 @@ $app->patch('/api/vendor/orders/{order_id}/status', function (Request $request, 
     try {
         $body = parsedBody($request);
         $status = strtolower(trim((string) ($body['status'] ?? '')));
-        $allowedStatuses = ['pending', 'preparing', 'ready', 'completed', 'cancelled'];
+        $allowedStatuses = ['pending', 'preparing', 'ready', 'on_the_way', 'completed', 'cancelled'];
 
         if (!in_array($status, $allowedStatuses, true)) {
             return jsonResponse($response, [
@@ -688,7 +821,7 @@ $app->get('/api/vendor/sales', function (Request $request, Response $response) u
             "SELECT status, COUNT(*) AS total
              FROM orders
              GROUP BY status
-             ORDER BY FIELD(status, 'pending', 'preparing', 'ready', 'completed', 'cancelled')"
+             ORDER BY FIELD(status, 'pending', 'preparing', 'ready', 'on_the_way', 'completed', 'cancelled')"
         );
 
         return jsonResponse($response, [

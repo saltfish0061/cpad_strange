@@ -7,7 +7,7 @@
 ?>
 <header class="topbar">
   <a class="brand" href="<?php echo $root_path; ?>index.php" aria-label="Universal Sambal home">
-    <span class="brand-mark">US</span>
+    <img class="logo" src="<?php echo $root_path; ?>images/assets/logo.png" alt="Universal Sambal logo">
     <span>Universal Sambal</span>
   </a>
 
@@ -16,7 +16,7 @@
     <a class="nav-link <?php echo ($active_page === 'menu') ? 'active' : ''; ?>" data-page="menu" href="<?php echo $root_path; ?>src/customer/menu.php">Menu</a>
     <a class="nav-link <?php echo ($active_page === 'orders') ? 'active' : ''; ?>" data-page="orders" href="<?php echo $root_path; ?>src/customer/my_orders.php">Orders</a>
     <a class="nav-link <?php echo ($active_page === 'profile') ? 'active' : ''; ?>" data-page="profile" href="<?php echo $root_path; ?>src/customer/profile.php">Profile</a>
-    <a id="header-vendor-link" class="nav-link <?php echo ($active_page === 'vendor') ? 'active' : ''; ?>" data-page="vendor" href="<?php echo $root_path; ?>src/vendor/dashboard.php" hidden>Vendor</a>
+    <a id="header-vendor-link" class="nav-link <?php echo ($active_page === 'vendor') ? 'active' : ''; ?>" data-page="vendor" href="<?php echo $root_path; ?>src/vendor/dashboard.php" hidden>Dashboard</a>
   </nav>
 
   <div class="top-actions">
@@ -96,8 +96,11 @@
 
     logoutButton.addEventListener('click', () => {
       localStorage.removeItem('currentUser');
+      localStorage.removeItem('cart');
+      localStorage.removeItem('orderNote');
       syncHeaderAuth();
       syncHeaderVendorLink();
+      syncHeaderCartCount();
       window.location.href = '<?php echo $root_path; ?>index.php';
     });
   };
@@ -120,4 +123,17 @@
     syncHeaderVendorLink();
     syncHeaderAuth();
   }, 1000);
+
+  const animateHeaderCartWiggle = () => {
+    const cartButton = document.querySelector('.cart-button');
+    if (!cartButton) return;
+
+    cartButton.classList.remove('cart-wiggle');
+    void cartButton.offsetWidth;
+    cartButton.classList.add('cart-wiggle');
+
+    window.setTimeout(() => {
+      cartButton.classList.remove('cart-wiggle');
+    }, 450);
+  };
 </script>

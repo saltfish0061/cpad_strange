@@ -130,6 +130,10 @@
                           <div><strong>Ready</strong><span>Ready for pickup</span></div>
                           <b class="queue-count">{{ orderCountByStatus('ready') }}</b>
                         </div>
+                        <div class="queue-row">
+                          <div><strong>On the way</strong><span>Out for delivery</span></div>
+                          <b class="queue-count">{{ orderCountByStatus('on_the_way') }}</b>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -138,7 +142,15 @@
                 <div v-if="vendorTab === 'orders'">
                   <div v-if="selectedOrder" class="order-detail">
                     <h3>Order {{ selectedOrder.order_id }} - {{ selectedOrder.customer_name }}</h3>
-                    <p class="muted-text">{{ selectedOrder.customer_phone }} - {{ formatMoney(selectedOrder.total_amount) }}</p>
+                    <p class="muted-text">
+                      {{ selectedOrder.customer_phone }} - {{ formatDeliveryMethod(selectedOrder.delivery_method) }} - {{ formatMoney(selectedOrder.total_amount) }}
+                    </p>
+                    <p v-if="selectedOrder.customer_address" class="muted-text">
+                      <strong>Address:</strong> {{ selectedOrder.customer_address }}
+                    </p>
+                    <p v-if="selectedOrder.order_note" class="muted-text">
+                      <strong>Note:</strong> {{ selectedOrder.order_note }}
+                    </p>
                     <ul class="order-detail-list">
                       <li v-for="item in selectedOrderItems" :key="item.order_item_id">
                         <span>{{ item.quantity }}x {{ item.name }}</span>
@@ -160,6 +172,7 @@
                           <th>Order</th>
                           <th>Customer</th>
                           <th>Phone</th>
+                          <th>Method</th>
                           <th>Items</th>
                           <th>Total</th>
                           <th>Status</th>
@@ -171,16 +184,15 @@
                           <td><button class="small-action" type="button" @click="viewOrder(order)">{{ order.order_id }}</button></td>
                           <td>{{ order.customer_name }}</td>
                           <td>{{ order.customer_phone }}</td>
+                          <td>{{ formatDeliveryMethod(order.delivery_method) }}</td>
                           <td>{{ order.item_count }}</td>
                           <td>{{ formatMoney(order.total_amount) }}</td>
-                          <td><span class="status-pill" :class="order.status">{{ order.status }}</span></td>
+                          <td><span class="status-pill" :class="order.status">{{ formatOrderStatus(order.status) }}</span></td>
                           <td>
                             <select class="vendor-select" :value="order.status" @change="updateOrderStatus(order, $event.target.value)">
-                              <option value="pending">pending</option>
-                              <option value="preparing">preparing</option>
-                              <option value="ready">ready</option>
-                              <option value="completed">completed</option>
-                              <option value="cancelled">cancelled</option>
+                              <option v-for="status in statusOptionsForOrder(order)" :key="status" :value="status">
+                                {{ formatOrderStatus(status) }}
+                              </option>
                             </select>
                           </td>
                         </tr>
@@ -278,7 +290,7 @@
   </div>
 
   <script>
-    const { createApp, computed, onMounted, ref } = Vue;
+    const { createApp, computed, onMounted, ref, watch } = Vue;
     let currentUser = null;
 
     try {
@@ -297,7 +309,8 @@
     createApp({
       setup() {
         const apiBase = '../../api';
-        const vendorTab = ref('dashboard');
+        const savedVendorTab = localStorage.getItem('vendorTab');
+        const vendorTab = ref(['dashboard', 'orders', 'menu', 'sales'].includes(savedVendorTab) ? savedVendorTab : 'dashboard');
         const vendorLoading = ref(false);
         const vendorMessage = ref('');
         const vendorMenu = ref([]);
@@ -318,6 +331,25 @@
         });
 
         const formatMoney = (value) => `RM ${Number(value || 0).toFixed(2)}`;
+        const formatDeliveryMethod = (method) => method === 'delivery' ? 'Delivery' : 'Pickup';
+        const formatOrderStatus = (status) => {
+          const labels = {
+            pending: 'Pending',
+            preparing: 'Preparing',
+            ready: 'Ready',
+            on_the_way: 'On the way',
+            completed: 'Completed',
+            cancelled: 'Cancelled'
+          };
+          return labels[status] || status;
+        };
+        const statusOptionsForOrder = (order) => [
+          'pending',
+          'preparing',
+          order.delivery_method === 'delivery' ? 'on_the_way' : 'ready',
+          'completed',
+          'cancelled'
+        ];
 
         const setVendorMessage = (message) => {
           vendorMessage.value = message;
@@ -476,6 +508,10 @@
           return `${Math.max(10, (Number(item.total_quantity || 0) / maxQuantity) * 100)}%`;
         };
 
+        watch(vendorTab, (tab) => {
+          localStorage.setItem('vendorTab', tab);
+        });
+
         onMounted(() => {
           if (canAccessVendor) loadVendorData();
         });
@@ -485,7 +521,9 @@
           deleteMenuItem,
           editMenuItem,
           editingItemId,
+          formatDeliveryMethod,
           formatMoney,
+          formatOrderStatus,
           loadVendorData,
           menuForm,
           orderCountByStatus,
@@ -496,6 +534,7 @@
           selectedOrder,
           selectedOrderItems,
           soldOutCount,
+          statusOptionsForOrder,
           toggleAvailability,
           updateOrderStatus,
           vendorLoading,
