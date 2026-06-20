@@ -267,18 +267,6 @@
   }
 }
 
-.cta-float.cta-pair {
-  right: auto;
-  left: calc(50% - 184px);
-  min-width: 150px;
-  background: var(--white);
-  color: var(--green-900);
-  transform: translateX(-100%);
-
-  &:hover {
-    transform: translateX(-100%) translateY(-3px);
-  }
-}
 
 /* Cart Page Layout */
 .cart-layout {
@@ -875,13 +863,4 @@ textarea.form-control {
     min-height: 72px;
   }
 
-  .cta-float.cta-pair {
-    inset: auto 12px 74px 12px;
-    width: calc(100% - 24px) !important;
-    transform: none;
-
-    &:hover {
-      transform: none;
-    }
-  }
 }

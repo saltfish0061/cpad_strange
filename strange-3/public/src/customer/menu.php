@@ -92,9 +92,6 @@
 
         <div class="menu-checkout-container"
           style="display: flex; justify-content: center; margin-top: 40px; margin-bottom: 20px;">
-          <button v-if="pairSuggestion" class="cta-float cta-pair" type="button" @click="showSuggestedCategory">
-            {{ pairSuggestion.label }}
-          </button>
           <button class="cta-float" :disabled="cartIsEmpty" @click="goToCheckout"
             style="width: 100%; max-width: 320px; text-align: center; border: 0;">
             Proceed to Checkout ({{ cartCount }} {{ cartCount === 1 ? 'item' : 'items' }})
@@ -273,42 +270,6 @@
           return cartCount.value === 0;
         });
 
-        const cartCategories = computed(() => {
-          const categories = new Set();
-
-          for (const itemId of Object.keys(cart.value)) {
-            const item = menuItems.value.find((menuItem) => menuItem.item_id === itemId);
-            if (item) {
-              categories.add(item.category);
-            }
-          }
-
-          return categories;
-        });
-
-        const pairSuggestion = computed(() => {
-          if (cartIsEmpty.value) return null;
-          const hasFood = cartCategories.value.has('food');
-          const hasDrink = cartCategories.value.has('drink');
-
-          if (hasFood && !hasDrink) {
-            return { category: 'drink', label: 'Add a Drink' };
-          }
-
-          if (hasDrink && !hasFood) {
-            return { category: 'food', label: 'Add a Meal' };
-          }
-
-          return null;
-        });
-
-        const showSuggestedCategory = () => {
-          if (!pairSuggestion.value) return;
-          searchQuery.value = '';
-          selectedCategory.value = pairSuggestion.value.category;
-          syncMenuUrl();
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        };
 
         const goToCheckout = () => {
           if (!cartIsEmpty.value) {
@@ -336,8 +297,6 @@
           syncMenuUrl,
           cartCount,
           cartIsEmpty,
-          pairSuggestion,
-          showSuggestedCategory,
           goToCheckout
         };
       }

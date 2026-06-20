@@ -128,7 +128,7 @@
             <div class="section-head center-text">
               <div>
                 <h2>Find Your Perfect Pair</h2>
-                <p>Slide to match your heat level with the perfect cooling drink</p>
+                <p>Slide to match your spicy level with the perfect cooling drink</p>
               </div>
             </div>
 
@@ -149,7 +149,7 @@
                   <article class="combo-card food-combo" :class="{ 'sold-out-card': !Number(suggestedCombo.food.is_available) }">
                     <img :src="getItemImage(suggestedCombo.food.item_id)" :alt="suggestedCombo.food.name">
                     <div class="combo-card-body">
-                      <span class="combo-badge hot">🌶️ Heat Level {{ spiceLevel }}</span>
+                      <span class="combo-badge hot">🌶️ Spicy Level {{ spiceLevel }}</span>
                       <span v-if="!Number(suggestedCombo.food.is_available)" class="sold-out-ribbon">Sold Out</span>
                       <h3>{{ suggestedCombo.food.name }}</h3>
                       <p class="meta">{{ suggestedCombo.food.description }}</p>
