@@ -116,6 +116,30 @@
 
         const saveCart = () => {
           localStorage.setItem('cart', JSON.stringify(cart.value));
+
+          if (typeof syncHeaderCartCount === 'function') {
+            syncHeaderCartCount();
+          }
+        };
+
+        const removeUnavailableCartItems = () => {
+          const availableIds = new Set(
+            menuItems.value
+              .filter((item) => Number(item.is_available))
+              .map((item) => item.item_id)
+          );
+          let changed = false;
+
+          for (const itemId of Object.keys(cart.value)) {
+            if (!availableIds.has(itemId)) {
+              delete cart.value[itemId];
+              changed = true;
+            }
+          }
+
+          if (changed) {
+            saveCart();
+          }
         };
 
         const loadOrderNote = () => {
@@ -136,6 +160,7 @@
             const data = await res.json();
             if (data.status === 'success') {
               menuItems.value = data.items;
+              removeUnavailableCartItems();
             }
           } catch (e) {
             console.error('Error fetching menu:', e);
@@ -165,6 +190,9 @@
             cart.value[itemId]++;
           }
           saveCart();
+          if (typeof animateHeaderCartWiggle === 'function') {
+            animateHeaderCartWiggle();
+          }
         };
 
         const decreaseQty = (itemId) => {
@@ -174,6 +202,9 @@
               delete cart.value[itemId];
             }
             saveCart();
+            if (typeof animateHeaderCartWiggle === 'function') {
+            animateHeaderCartWiggle();
+          }
           }
         };
 

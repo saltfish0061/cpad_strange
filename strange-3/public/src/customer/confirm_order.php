@@ -26,7 +26,7 @@
             <span class="order-id-highlight">Order ID: {{ orderId }}</span>
           </div>
           <div class="cta-row">
-            <a class="cta" href="my_orders.php">Track Order Status</a>
+            <a class="cta" :href="trackOrderLink">Track Order Status</a>
             <a class="cta secondary" href="menu.php">Return</a>
           </div>
         </div>
@@ -45,6 +45,11 @@
       setup() {
         const orderId = ref('');
         const cartCount = ref(0);
+        const trackOrderLink = computed(() => {
+          return orderId.value && orderId.value !== 'N/A'
+            ? `order_details.php?id=${encodeURIComponent(orderId.value)}`
+            : 'my_orders.php';
+        });
 
         const loadCartCount = () => {
           try {
@@ -66,7 +71,8 @@
 
         return {
           orderId,
-          cartCount
+          cartCount,
+          trackOrderLink
         };
       }
     }).mount('#app');

@@ -57,6 +57,15 @@ function nextMenuItemId(PDO $db, string $category): string
     return $prefix . str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT);
 }
 
+function nextCustomerId(PDO $db): string
+{
+    $stmt = $db->query("SELECT user_id FROM users WHERE user_id LIKE 'C%' ORDER BY CAST(SUBSTRING(user_id, 2) AS UNSIGNED) DESC LIMIT 1");
+    $lastId = $stmt->fetchColumn();
+    $nextNumber = $lastId ? ((int) substr($lastId, 1)) + 1 : 1;
+
+    return 'C' . str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT);
+}
+
 function validateMenuPayload(array $body): array
 {
     $errors = [];
@@ -125,19 +134,19 @@ $app->get('/api/menu', function (Request $request, Response $response) use ($db_
 
 $app->post('/api/login', function (Request $request, Response $response) use ($db_conn) {
     $data = (array) $request->getParsedBody();
-    $identifier = trim($data['name'] ?? $data['user_id'] ?? '');
+    $identifier = trim($data['username'] ?? $data['name'] ?? $data['user_id'] ?? '');
     $password = trim($data['password'] ?? '');
 
     if ($identifier === '' || $password === '') {
         return jsonResponse($response, [
-            'error' => 'Name or user ID and password are required.',
+            'error' => 'Username and password are required.',
         ], 422);
     }
 
     try {
         $stmt = $db_conn->prepare(
             'SELECT user_id, name, password, role, phone, address FROM users
-             WHERE name = :identifier OR user_id = :identifier
+             WHERE BINARY name = :identifier
              LIMIT 1'
         );
         $stmt->execute([
@@ -148,7 +157,7 @@ $app->post('/api/login', function (Request $request, Response $response) use ($d
 
         if (!$user || $password !== $user['password']) {
             return jsonResponse($response, [
-                'error' => 'Invalid login credentials.',
+                'error' => 'Username or password is wrong.',
             ], 401);
         }
 
@@ -161,6 +170,84 @@ $app->post('/api/login', function (Request $request, Response $response) use ($d
     } catch (Throwable $error) {
         return jsonResponse($response, [
             'error' => 'Unable to login right now.',
+        ], 500);
+    }
+});
+
+$app->post('/api/register', function (Request $request, Response $response) use ($db_conn) {
+    $body = parsedBody($request);
+    $name = trim((string) ($body['username'] ?? $body['name'] ?? ''));
+    $phone = trim((string) ($body['phone'] ?? ''));
+    $address = trim((string) ($body['address'] ?? ''));
+    $password = trim((string) ($body['password'] ?? ''));
+    $confirmPassword = trim((string) ($body['confirm_password'] ?? ''));
+    $errors = [];
+
+    if ($name === '') {
+        $errors[] = 'Username is required.';
+    }
+
+    if ($phone === '') {
+        $errors[] = 'Phone number is required.';
+    }
+
+    if ($address === '') {
+        $errors[] = 'Address is required.';
+    }
+
+    if (strlen($password) < 4) {
+        $errors[] = 'Password must be at least 4 characters.';
+    }
+
+    if ($password !== $confirmPassword) {
+        $errors[] = 'Passwords do not match.';
+    }
+
+    if ($errors) {
+        return jsonResponse($response, [
+            'status' => 'error',
+            'errors' => $errors,
+        ], 422);
+    }
+
+    try {
+        $duplicateUsername = $db_conn->prepare('SELECT COUNT(*) FROM users WHERE name = ?');
+        $duplicateUsername->execute([$name]);
+        if ((int) $duplicateUsername->fetchColumn() > 0) {
+            return jsonResponse($response, [
+                'status' => 'error',
+                'message' => 'Username already exists.',
+            ], 409);
+        }
+
+        $duplicatePhone = $db_conn->prepare('SELECT COUNT(*) FROM users WHERE phone = ?');
+        $duplicatePhone->execute([$phone]);
+        if ((int) $duplicatePhone->fetchColumn() > 0) {
+            return jsonResponse($response, [
+                'status' => 'error',
+                'message' => 'An account with this phone already exists.',
+            ], 409);
+        }
+
+        $userId = nextCustomerId($db_conn);
+        $stmt = $db_conn->prepare(
+            "INSERT INTO users (user_id, name, password, role, phone, address)
+             VALUES (?, ?, ?, 'customer', ?, ?)"
+        );
+        $stmt->execute([$userId, $name, $password, $phone, $address]);
+
+        $userStmt = $db_conn->prepare('SELECT user_id, name, role, phone, address FROM users WHERE user_id = ? LIMIT 1');
+        $userStmt->execute([$userId]);
+
+        return jsonResponse($response, [
+            'status' => 'success',
+            'message' => 'Registration successful.',
+            'user' => $userStmt->fetch(PDO::FETCH_ASSOC),
+        ], 201);
+    } catch (Throwable $error) {
+        return jsonResponse($response, [
+            'status' => 'error',
+            'message' => 'Unable to register right now.',
         ], 500);
     }
 });

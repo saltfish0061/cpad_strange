@@ -95,7 +95,7 @@
             <div class="cart-summary-card">
               <h3>Delivery / Pickup Info</h3>
               <p><strong>Method:</strong> {{ formatDeliveryMethod(currentOrder.delivery_method) }}</p>
-              <p><strong>Customer Name:</strong> {{ currentUser?.name || currentOrder.user_id }}</p>
+              <p><strong>Name:</strong> {{ currentUser?.name || currentOrder.user_id }}</p>
               <p><strong>Phone:</strong> {{ currentUser?.phone || '-' }}</p>
               <p><strong>Address:</strong> {{ currentUser?.address || '-' }}</p>
               <p v-if="currentOrder.order_note"><strong>Note:</strong> {{ currentOrder.order_note }}</p>
@@ -166,7 +166,7 @@
         };
 
         const formatDeliveryMethod = (method) => {
-          return method === 'delivery' ? 'Delivery' : 'Self-Pickup at Cafeteria';
+          return method === 'delivery' ? 'Delivery' : 'Self-Pickup';
         };
 
         const formatOrderStatus = (status) => {

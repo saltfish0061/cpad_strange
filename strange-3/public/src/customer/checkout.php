@@ -21,7 +21,7 @@
       <section class="page section">
         <div class="section-head">
           <div>
-            <p class="eyebrow">Almost Done</p>
+            <p class="eyebrow">Almost Done!</p>
             <h2>Checkout Details</h2>
           </div>
         </div>
@@ -37,20 +37,20 @@
             <h3>Customer & Payment Info</h3>
             <form @submit.prevent="submitOrder" class="checkout-form">
               <div class="form-group">
-                <label for="name">Customer Name</label>
-                <input type="text" id="name" v-model="checkoutForm.name" class="form-control" required readonly>
+                <label for="name">Username</label>
+                <input type="text" id="name" v-model="checkoutForm.name" class="form-control" required>
               </div>
               <div class="form-group">
                 <label for="phone">Phone Number</label>
-                <input type="text" id="phone" v-model="checkoutForm.phone" class="form-control" required readonly>
+                <input type="text" id="phone" v-model="checkoutForm.phone" class="form-control" required>
               </div>
               <div class="form-group">
                 <label for="address">Address</label>
-                <textarea id="address" v-model="checkoutForm.address" class="form-control" required readonly></textarea>
+                <textarea id="address" v-model="checkoutForm.address" class="form-control" required></textarea>
               </div>
               <div class="form-group">
                 <label for="order-note">Order Note</label>
-                <textarea id="order-note" v-model="checkoutForm.orderNote" class="form-control" readonly></textarea>
+                <textarea id="order-note" v-model="checkoutForm.orderNote" class="form-control" @input="saveOrderNote"></textarea>
               </div>
               <div class="form-group">
                 <label>Delivery Method</label>
@@ -154,6 +154,33 @@
 
         const saveCart = () => {
           localStorage.setItem('cart', JSON.stringify(cart.value));
+          if (typeof syncHeaderCartCount === 'function') {
+            syncHeaderCartCount();
+          }
+        };
+
+        const removeUnavailableCartItems = () => {
+          const availableIds = new Set(
+            menuItems.value
+              .filter((item) => Number(item.is_available))
+              .map((item) => item.item_id)
+          );
+          let changed = false;
+
+          for (const itemId of Object.keys(cart.value)) {
+            if (!availableIds.has(itemId)) {
+              delete cart.value[itemId];
+              changed = true;
+            }
+          }
+
+          if (changed) {
+            saveCart();
+          }
+        };
+
+        const saveOrderNote = () => {
+          localStorage.setItem('orderNote', checkoutForm.value.orderNote);
         };
 
         const loadCheckoutProfile = async () => {
@@ -184,10 +211,11 @@
 
         const fetchMenu = async () => {
           try {
-            const res = await fetch('../../api/menu');
+            const res = await fetch('../../api/menu?include_unavailable=1');
             const data = await res.json();
             if (data.status === 'success') {
               menuItems.value = data.items;
+              removeUnavailableCartItems();
             }
           } catch (e) {
             console.error('Error fetching menu:', e);
@@ -227,13 +255,35 @@
             return;
           }
 
+          if (!checkoutForm.value.name || !checkoutForm.value.phone) {
+            alert('Please enter your username and phone number.');
+            return;
+          }
+
           if (checkoutForm.value.deliveryMethod === 'delivery' && !checkoutForm.value.address) {
-            alert('Please add your address in Profile before choosing delivery.');
+            alert('Please enter your delivery address.');
             return;
           }
 
           submitting.value = true;
           try {
+            const profileRes = await fetch(`../../api/profile/${currentUser.value.user_id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                name: checkoutForm.value.name,
+                phone: checkoutForm.value.phone,
+                address: checkoutForm.value.address
+              })
+            });
+            const profileData = await profileRes.json();
+            if (!profileRes.ok || profileData.status === 'error') {
+              const message = profileData.errors ? profileData.errors.join(' ') : (profileData.message || 'Unable to update checkout info.');
+              throw new Error(message);
+            }
+            currentUser.value = profileData.user;
+            localStorage.setItem('currentUser', JSON.stringify(profileData.user));
+
             const res = await fetch('../../api/orders', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -272,6 +322,7 @@
           cartItemsList,
           cartTotal,
           checkoutForm,
+          saveOrderNote,
           submitOrder,
           submitting
         };

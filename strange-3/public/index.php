@@ -23,10 +23,10 @@
         <section class="landing-top">
           <div class="page hero">
             <div class="hero-copy">
-              <h1>Want to get constipated? Try ours</h1>
+              <h1>Ayam Gepuk? Nah, Try Ours. Constipation Guaranteed</h1>
               <p class="hero-text">
-                A base customer interface for Universal Sambal. Browse the menu, add items to cart,
-                track orders, and leave the real links ready for the backend module.
+                Order ayam geprek, rice meals, and cold drinks from Universal Sambal. Pick up at the cafe
+                or choose delivery when the craving cannot wait.
               </p>
               <div class="hero-actions">
                 <a class="cta" href="src/customer/menu.php">Explore Menu</a>
@@ -60,7 +60,7 @@
                   <div>
                     <p class="eyebrow">Made fresh</p>
                     <h3>Order ahead during peak hours</h3>
-                    <p>Placeholder campaign panel for future offers or announcements.</p>
+                    <p>Skip the rush by placing your order early, then track the kitchen status from your phone.</p>
                     <a class="cta" href="src/customer/my_orders.php">Track Order</a>
                   </div>
                   <lottie-player
@@ -76,7 +76,7 @@
                 <article class="promo green">
                   <div>
                     <p class="eyebrow">Customer Menu</p>
-                    <h3>Browse Food & Drinks</h3>
+                    <h3>Rice meals, sambal, and drinks</h3>
                     <p>Explore our signature spicy dishes, authentic Indonesian rice meals, and fresh beverages.</p>
                     <a class="cta" href="src/customer/menu.php">View Menu</a>
                   </div>
@@ -87,9 +87,9 @@
               <article class="promo red">
                 <div>
                   <p class="eyebrow">Fresh & Cold</p>
-                  <h3>Quench Your Thirst</h3>
-                  <p>Discover our refreshing selection of hand-crafted fruit juices, milkshakes, and cold teas to cool the heat.</p>
-                  <a class="cta" href="src/customer/menu.php">Explore Drinks</a>
+                  <h3>Cool down after the heat</h3>
+                  <p>Pair the sambal kick with chilled fruit juice, milk drinks, or something sweet from the drinks menu.</p>
+                  <a class="cta" href="src/customer/menu.php?category=drink">Explore Drinks</a>
                 </div>
                 <img class="cutout promo-img-splash" src="images/assets/splash.png" alt="Fruit drinks splash">
               </article>
@@ -123,46 +123,79 @@
           </div>
         </section>
 
-        <section class="category-band">
-          <div class="page section category-layout">
-            <div class="section-head">
+        <section class="spice-slider-band">
+          <div class="page section spice-layout">
+            <div class="section-head center-text">
               <div>
-                <p class="eyebrow">System modules</p>
-                <h2>Base navigation for customer and vendor flow</h2>
+                <h2>Find Your Perfect Pair</h2>
+                <p>Slide to match your heat level with the perfect cooling drink</p>
               </div>
             </div>
 
-            <div class="category-art">
-              <img src="images/assets/top_view.png" alt="Rice meal">
-              <a href="src/customer/menu.php" class="float-tile tile-food">
-                <strong>Menu</strong>
-                <span>Browse food and drinks</span>
-              </a>
-              <a href="src/customer/cart.php" class="float-tile tile-drink">
-                <strong>Cart</strong>
-                <span>Adjust quantities</span>
-              </a>
-              <a href="src/customer/my_orders.php" class="float-tile tile-cart">
-                <strong>Orders</strong>
-                <span>Status and history</span>
-              </a>
-              <a v-if="isVendor" href="src/vendor/dashboard.php" class="float-tile tile-order">
-                <strong>Vendor</strong>
-                <span>Manage records</span>
-              </a>
+            <div class="spice-interactive">
+              <div class="spice-slider-container">
+                <input type="range" min="1" max="5" v-model="spiceLevel" class="spice-slider" :class="'level-' + spiceLevel">
+                <div class="spice-labels">
+                  <span>Mild</span>
+                  <span>Sweet Heat</span>
+                  <span>Classic Kick</span>
+                  <span>Fire Warning</span>
+                  <span>Call Ambulance</span>
+                </div>
+              </div>
+
+              <transition name="combo-swap" mode="out-in">
+                <div class="combo-showcase" v-if="suggestedCombo" :key="spiceLevel">
+                  <article class="combo-card food-combo" :class="{ 'sold-out-card': !Number(suggestedCombo.food.is_available) }">
+                    <img :src="getItemImage(suggestedCombo.food.item_id)" :alt="suggestedCombo.food.name">
+                    <div class="combo-card-body">
+                      <span class="combo-badge hot">🌶️ Heat Level {{ spiceLevel }}</span>
+                      <span v-if="!Number(suggestedCombo.food.is_available)" class="sold-out-ribbon">Sold Out</span>
+                      <h3>{{ suggestedCombo.food.name }}</h3>
+                      <p class="meta">{{ suggestedCombo.food.description }}</p>
+                      <div class="price-row">
+                        <span>RM {{ parseFloat(suggestedCombo.food.price).toFixed(2) }}</span>
+                      </div>
+                    </div>
+                  </article>
+
+                  <div class="combo-plus">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                  </div>
+
+                  <article class="combo-card drink-combo" :class="{ 'sold-out-card': !Number(suggestedCombo.drink.is_available) }">
+                    <img :src="getItemImage(suggestedCombo.drink.item_id)" :alt="suggestedCombo.drink.name">
+                    <div class="combo-card-body">
+                      <span class="combo-badge cool">❄️ Cool Down</span>
+                      <span v-if="!Number(suggestedCombo.drink.is_available)" class="sold-out-ribbon">Sold Out</span>
+                      <h3>{{ suggestedCombo.drink.name }}</h3>
+                      <p class="meta">{{ suggestedCombo.drink.description }}</p>
+                      <div class="price-row">
+                        <span>RM {{ parseFloat(suggestedCombo.drink.price).toFixed(2) }}</span>
+                      </div>
+                    </div>
+                  </article>
+                </div>
+              </transition>
+
+              <div class="combo-actions" v-if="suggestedCombo">
+                <button type="button" class="cta cta-combo" :disabled="comboUnavailable" @click="addComboToCart">
+                  {{ comboUnavailable ? 'Combo Currently Sold Out' : 'Add Perfect Combo to Cart' }}
+                </button>
+              </div>
             </div>
           </div>
         </section>
       </div>
 
       <footer class="footer">
-        Universal Sambal base UI. Vue frontend linked to individual customer PHP pages.
+        Universal Sambal. Fresh orders, spicy plates, and cold drinks.
       </footer>
     </main>
   </div>
 
   <script>
-    const { createApp, computed, onMounted, ref } = Vue;
+    const { createApp, computed, onMounted, ref, watch } = Vue;
 
     createApp({
       setup() {
@@ -170,6 +203,41 @@
         const cart = ref({});
         const menuItems = ref([]);
         const topPickIds = ['F001', 'F002', 'D005'];
+        const savedSpiceLevel = Number(localStorage.getItem('spiceLevel'));
+        const spiceLevel = ref(savedSpiceLevel >= 1 && savedSpiceLevel <= 5 ? savedSpiceLevel : 3);
+
+        const comboMap = {
+          1: { food: 'F003', drink: 'D006' },
+          2: { food: 'F002', drink: 'D001' },
+          3: { food: 'F005', drink: 'D003' },
+          4: { food: 'F001', drink: 'D004' },
+          5: { food: 'F004', drink: 'D005' },
+        };
+
+        const suggestedCombo = computed(() => {
+          if (!menuItems.value.length) return null;
+          const map = comboMap[spiceLevel.value];
+          if (!map) return null;
+          const food = menuItems.value.find(item => item.item_id === map.food);
+          const drink = menuItems.value.find(item => item.item_id === map.drink);
+          if (food && drink) {
+            return { food, drink };
+          }
+          return null;
+        });
+
+        const comboUnavailable = computed(() => {
+          return !suggestedCombo.value ||
+            !Number(suggestedCombo.value.food.is_available) ||
+            !Number(suggestedCombo.value.drink.is_available);
+        });
+
+        const addComboToCart = () => {
+          if (suggestedCombo.value && !comboUnavailable.value) {
+            increaseQty(suggestedCombo.value.food.item_id);
+            increaseQty(suggestedCombo.value.drink.item_id);
+          }
+        };
 
         const loadCurrentUser = () => {
           try {
@@ -196,12 +264,33 @@
           }
         };
 
+        const removeUnavailableCartItems = () => {
+          const availableIds = new Set(
+            menuItems.value
+              .filter((item) => Number(item.is_available))
+              .map((item) => item.item_id)
+          );
+          let changed = false;
+
+          for (const itemId of Object.keys(cart.value)) {
+            if (!availableIds.has(itemId)) {
+              delete cart.value[itemId];
+              changed = true;
+            }
+          }
+
+          if (changed) {
+            saveCart();
+          }
+        };
+
         const fetchMenu = async () => {
           try {
-            const res = await fetch('api/menu');
+            const res = await fetch('api/menu?include_unavailable=1');
             const data = await res.json();
             if (data.status === 'success') {
               menuItems.value = data.items;
+              removeUnavailableCartItems();
             }
           } catch (e) {
             console.error('Error fetching top picks:', e);
@@ -211,13 +300,14 @@
         const isVendor = computed(() => currentUser.value?.role === 'admin');
 
         const topPickItems = computed(() => {
+          const availableItems = menuItems.value.filter((item) => Number(item.is_available));
           const selectedItems = topPickIds
-            .map((itemId) => menuItems.value.find((item) => item.item_id === itemId))
+            .map((itemId) => availableItems.find((item) => item.item_id === itemId))
             .filter(Boolean);
 
           return selectedItems.length === topPickIds.length
             ? selectedItems
-            : menuItems.value.slice(0, 3);
+            : availableItems.slice(0, 3);
         });
 
         const getItemImage = (itemId) => {
@@ -274,6 +364,10 @@
           });
         });
 
+        watch(spiceLevel, (level) => {
+          localStorage.setItem('spiceLevel', String(level));
+        });
+
         return {
           cart,
           currentUser,
@@ -281,7 +375,11 @@
           getItemImage,
           increaseQty,
           isVendor,
-          topPickItems
+          topPickItems,
+          spiceLevel,
+          suggestedCombo,
+          comboUnavailable,
+          addComboToCart
         };
       }
     }).mount('#app');

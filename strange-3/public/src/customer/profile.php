@@ -24,7 +24,7 @@
             <p class="eyebrow">Customer profile</p>
             <h2>My Profile</h2>
           </div>
-          <p>Manage your name, phone number, and account password.</p>
+          <p>Manage your username, phone number, address, and account password.</p>
         </div>
 
         <div v-if="!currentUser" class="empty-panel">
@@ -53,23 +53,29 @@
               <p v-if="profileError" class="form-error">{{ profileError }}</p>
 
               <label class="form-field">
-                <span>Name</span>
-                <input v-model="profileForm.name" required>
+                <span>Username</span>
+                <input v-model="profileForm.name" :disabled="!isEditingProfile" required>
               </label>
 
               <label class="form-field">
                 <span>Phone</span>
-                <input v-model="profileForm.phone" required>
+                <input v-model="profileForm.phone" :disabled="!isEditingProfile" required>
               </label>
 
               <label class="form-field wide">
                 <span>Address</span>
-                <textarea class="form-control" v-model="profileForm.address" required></textarea>
+                <textarea class="form-control" v-model="profileForm.address" :disabled="!isEditingProfile" required></textarea>
               </label>
 
               <div class="inline-actions wide">
-                <button class="small-action primary" type="submit" :disabled="profileSaving">
+                <button v-if="!isEditingProfile" class="small-action primary" type="button" @click="startEditingProfile">
+                  Edit Profile
+                </button>
+                <button v-if="isEditingProfile" class="small-action primary" type="submit" :disabled="profileSaving">
                   {{ profileSaving ? 'Saving...' : 'Save Profile' }}
+                </button>
+                <button v-if="isEditingProfile" class="small-action" type="button" @click="cancelEditingProfile" :disabled="profileSaving">
+                  Cancel
                 </button>
                 <button class="small-action" type="button" @click="showPasswordForm = !showPasswordForm">
                   {{ showPasswordForm ? 'Cancel Password Change' : 'Change Password' }}
@@ -122,6 +128,7 @@
         const profileSaving = ref(false);
         const passwordSaving = ref(false);
         const showPasswordForm = ref(false);
+        const isEditingProfile = ref(false);
         const profileMessage = ref('');
         const profileError = ref('');
         const passwordMessage = ref('');
@@ -202,12 +209,26 @@
             currentUser.value = data.user;
             localStorage.setItem('currentUser', JSON.stringify(data.user));
             syncProfileForm(data.user);
+            isEditingProfile.value = false;
             profileMessage.value = 'Profile updated.';
           } catch (error) {
             profileError.value = error.message || 'Unable to save profile.';
           } finally {
             profileSaving.value = false;
           }
+        };
+
+        const startEditingProfile = () => {
+          profileMessage.value = '';
+          profileError.value = '';
+          syncProfileForm(currentUser.value);
+          isEditingProfile.value = true;
+        };
+
+        const cancelEditingProfile = () => {
+          syncProfileForm(currentUser.value);
+          profileError.value = '';
+          isEditingProfile.value = false;
         };
 
         const changePassword = async () => {
@@ -252,7 +273,9 @@
 
         return {
           changePassword,
+          cancelEditingProfile,
           currentUser,
+          isEditingProfile,
           passwordError,
           passwordForm,
           passwordMessage,
@@ -264,7 +287,8 @@
           profileMessage,
           profileSaving,
           saveProfile,
-          showPasswordForm
+          showPasswordForm,
+          startEditingProfile
         };
       }
     }).mount('#app');

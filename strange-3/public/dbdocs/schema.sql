@@ -17,7 +17,8 @@ CREATE TABLE IF NOT EXISTS `users` (
   `role` enum('admin','customer') NOT NULL DEFAULT 'customer',
   `phone` varchar(20) DEFAULT NULL,
   `address` text DEFAULT NULL,
-  PRIMARY KEY (`user_id`)
+  PRIMARY KEY (`user_id`),
+  UNIQUE KEY `users_name_unique` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE IF NOT EXISTS `orders` (

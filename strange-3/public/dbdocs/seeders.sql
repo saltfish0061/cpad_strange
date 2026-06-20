@@ -2,32 +2,32 @@
 
 -- Insert into menus
 INSERT INTO `menus` VALUES 
-('D001','Jus Oren Ice','Chilled orange juice',5.90,'drink',1),
-('D002','Jus Carrot Ice','Freshly squeezed carrot juice',4.90,'drink',1),
-('D003','Jus Carrot Susu Ice','Chilled carrot juice with milk',5.40,'drink',1),
-('D004','Jus Tembikai Ice','Chilled watermelon juice',5.90,'drink',1),
-('D005','Jus Tembikai Susu Ice','Chilled watermelon juice with milk',6.40,'drink',1),
-('D006','Jus Epal Ice','Chilled apple juice',5.90,'drink',1),
-('F001','Ayam Geprek Sambal Merah','Ayam geprek with spicy red hot chili',11.20,'food',1),
-('F002','Ayam Geprek Sambal Hijau','Ayam geprek with mild-spicy green chili',11.20,'food',1),
-('F003','Ayam Geprek Sambal Brown Sugar','Ayam geprek with sweet & spicy taste',11.20,'food',1),
-('F004','Ayam Geprek Sambal Harimau','Ayam geprek with sliced chili topping',11.20,'food',1),
-('F005','Ayam Geprek Sambal Bawean','Ayam Geprek with authentic Indonesian shrimp paste sambal',11.20,'food',1),
-('F006','Ayam Geprek Sambal 2 Rasa','Ayam Geprek with 2 choices of sambal',11.70,'food',1),
-('F007','Ayam Geprek Sambal 3 Rasa','Ayam Geprek with 3 choices of sambal',12.20,'food',1)
+('D001','Jus Oren Ice','Sweet and tangy fresh orange juice blended to perfection and served ice cold',5.90,'drink',1),
+('D002','Jus Carrot Ice','Freshly pressed carrot juice with a naturally earthy sweetness, served chilled',4.90,'drink',1),
+('D003','Jus Carrot Susu Ice','Creamy carrot juice blended with fresh milk for a smooth and refreshing taste',5.40,'drink',1),
+('D004','Jus Tembikai Ice','Juicy watermelon blended into a light and refreshing drink, served icy cold',5.90,'drink',1),
+('D005','Jus Tembikai Susu Ice','Chilled watermelon juice blended with fresh milk for a creamy tropical cooldown',6.40,'drink',1),
+('D006','Jus Epal Ice','Crisp and subtly sweet apple juice served cold, the perfect refreshing sip',5.90,'drink',1),
+('F001','Ayam Geprek Sambal Merah','Crispy fried chicken smashed and coated in a fiery red chili sambal that hits hard',11.20,'food',1),
+('F002','Ayam Geprek Sambal Hijau','Crispy smashed chicken topped with a fragrant and mildly spicy green chili sambal',11.20,'food',1),
+('F003','Ayam Geprek Sambal Brown Sugar','Crispy smashed chicken with a bold sambal that balances smoky heat and caramel sweetness',11.20,'food',1),
+('F004','Ayam Geprek Sambal Harimau','Crispy smashed chicken loaded with fresh sliced chilies for a raw and punchy heat',11.20,'food',1),
+('F005','Ayam Geprek Sambal Bawean','Crispy smashed chicken with a deep and complex shrimp paste sambal from the Bawean tradition',11.20,'food',1),
+('F006','Ayam Geprek Sambal 2 Rasa','Crispy smashed chicken served with two sambal choices so you get the best of both worlds',11.70,'food',1),
+('F007','Ayam Geprek Sambal 3 Rasa','Crispy smashed chicken served with three sambal choices for the ultimate sambal experience',12.20,'food',1)
 ON DUPLICATE KEY UPDATE `name`=VALUES(`name`);
 
 -- Insert into users
 INSERT INTO `users` (`user_id`, `name`, `password`, `role`, `phone`, `address`) VALUES 
-('A001','Admin','admin123','admin','0137461935','Vendor counter'),
-('A002','Vendor','vendor123','admin','0158163956','Kitchen counter'),
-('C001','Customer','customer123','customer','0157164916','Kolej Tun Razak, UTM'),
-('C002','Muhammad','abcdefg','customer','0183472383','Kolej Rahman Putra, UTM'),
-('C003','Danial','ABCDEFG','customer','0147153852','Kolej Tun Hussein Onn, UTM'),
-('C004','Afiq','1234567','customer','0183649261','Kolej Perdana, UTM'),
-('C005','Siang','siangmalam','customer','0117461835','Kolej 9, UTM'),
-('C006','Ng','NotGood','customer','0147528251','Kolej 10, UTM'),
-('C007','Wei','24681357','customer','0192715418','Kolej Datin Seri Endon, UTM')
+('A001','admin','admin123','admin','0137461935','Vendor counter'),
+('A002','vendor','vendor123','admin','0158163956','Kitchen counter'),
+('C001','customer','customer123','customer','0157164916','Kolej Tun Razak, UTM'),
+('C002','muhammad','abcdefg','customer','0183472383','Kolej Rahman Putra, UTM'),
+('C003','danial','ABCDEFG','customer','0147153852','Kolej Tun Hussein Onn, UTM'),
+('C004','afiq','1234567','customer','0183649261','Kolej Perdana, UTM'),
+('C005','siang','siangmalam','customer','0117461835','Kolej 9, UTM'),
+('C006','ng','NotGood','customer','0147528251','Kolej 10, UTM'),
+('C007','wei','24681357','customer','0192715418','Kolej Datin Seri Endon, UTM')
 ON DUPLICATE KEY UPDATE `name`=VALUES(`name`), `phone`=VALUES(`phone`), `address`=VALUES(`address`);
 
 -- Insert into orders
