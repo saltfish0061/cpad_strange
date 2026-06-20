@@ -128,7 +128,7 @@
       </section>
 
       <footer class="footer">
-        Universal Sambal Order Tracking. Refined Customer flow.
+        Universal Sambal Order Tracking.
       </footer>
     </main>
   </div>

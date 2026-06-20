@@ -118,7 +118,7 @@
       </section>
 
       <footer class="footer">
-        Universal Sambal Checkout. Refined Customer flow.
+        Universal Sambal Checkout.
       </footer>
     </main>
   </div>

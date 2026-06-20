@@ -33,7 +33,7 @@
       </section>
 
       <footer class="footer">
-        Universal Sambal Order Success. Refined Customer flow.
+        Universal Sambal Order Success.
       </footer>
     </main>
   </div>

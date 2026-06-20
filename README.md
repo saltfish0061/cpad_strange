@@ -73,6 +73,12 @@ Since this project uses the PHP Slim 4 Framework for API routing:
      SOURCE C:/xampp/htdocs/cpad-project/strange-3/public/dbdocs/cpad_03_Strange.sql;
      ```
 
+### 4. Accessing the Application
+Once the database is set up and Apache/MySQL are running, you can access the application:
+1. Open your web browser.
+2. Navigate to: `http://localhost/cpad-project/`
+3. The root `index.php` will automatically redirect you to the main login page at: `http://localhost/cpad-project/strange-3/public/src/auth/login.php`
+
 
 ## Database Backup
 To back up the database for submission, run from the command line:

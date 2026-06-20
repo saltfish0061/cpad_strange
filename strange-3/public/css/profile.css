@@ -1,0 +1,77 @@
+/* Customer Profile Dashboard */
+.profile-layout {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.profile-summary,
+.profile-form {
+  border: 1px solid var(--line);
+  border-radius: 30px;
+  background: var(--white);
+  box-shadow: 0 16px 32px rgba(36, 17, 0, 0.08);
+}
+
+.profile-summary {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 28px;
+  text-align: center;
+}
+
+.profile-avatar {
+  display: grid;
+  place-items: center;
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--green-900), var(--orange));
+  color: var(--white);
+  font-size: 32px;
+  font-weight: 900;
+}
+
+.profile-summary h3 {
+  margin: 8px 0 0;
+  font-size: 24px;
+}
+
+.profile-summary p {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.profile-stack {
+  display: grid;
+  gap: 18px;
+}
+
+.profile-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  padding: 24px;
+}
+
+.profile-form .wide,
+.profile-form .vendor-alert,
+.profile-form .form-error {
+  grid-column: 1 / -1;
+}
+
+/* Responsive hooks */
+@media (max-width: 980px) {
+  .profile-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .profile-form {
+    grid-template-columns: 1fr;
+  }
+}
