@@ -1,0 +1,66 @@
+=========================================
+      Seed Users (From seeders.sql)
+=========================================
+
+--- ADMIN / VENDOR ROLE ---
+Username: admin
+Password: admin123
+
+Username: vendor
+Password: vendor123
+
+--- CUSTOMER ROLE ---
+Username: customer
+Password: customer123
+
+Username: muhammad
+Password: abcdefg
+
+Username: danial
+Password: ABCDEFG
+
+Username: afiq
+Password: 1234567
+
+Username: siang
+Password: siangmalam
+
+Username: ng
+Password: NotGood
+
+Username: wei
+Password: 24681357
+
+
+=========================================
+  Alternative Users (From Backup Dump SQL)
+=========================================
+
+--- ADMIN / VENDOR ROLE ---
+Username: Admin_Geprek
+Password: Geprek4ever
+
+Username: Admin_Sambal
+Password: Sambal4ever
+
+--- CUSTOMER ROLE ---
+Username: Saltfish
+Password: wwww2333
+
+Username: Muhammad
+Password: abcdefg
+
+Username: Danial
+Password: ABCDEFG
+
+Username: Afiq
+Password: 1234567
+
+Username: Siang
+Password: siangmalam
+
+Username: Ng
+Password: NotGood
+
+Username: Wei
+Password: 24681357
