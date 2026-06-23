@@ -7,6 +7,7 @@
   <title>Universal Sambal</title>
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  <script src="js/app-utils.js"></script>
   <link rel="stylesheet" href="css/style.css">
 </head>
 
@@ -16,7 +17,7 @@
       <?php
         $root_path = "";
         $active_page = "home";
-        include 'includes/customer_header.php';
+        include 'libs/customer_header.php';
       ?>
 
       <div>
@@ -188,9 +189,7 @@
         </section>
       </div>
 
-      <footer class="footer">
-        Universal Sambal. Fresh orders, spicy plates, and cold drinks.
-      </footer>
+      <?php include 'libs/footer.php'; ?>
     </main>
   </div>
 
@@ -234,34 +233,24 @@
 
         const addComboToCart = () => {
           if (suggestedCombo.value && !comboUnavailable.value) {
-            increaseQty(suggestedCombo.value.food.item_id);
-            increaseQty(suggestedCombo.value.drink.item_id);
+            increaseQty(suggestedCombo.value.food.item_id, false);
+            increaseQty(suggestedCombo.value.drink.item_id, false);
+            if (typeof showToast === 'function') {
+              showToast('Combo added to cart.');
+            }
           }
         };
 
         const loadCurrentUser = () => {
-          try {
-            const savedUser = localStorage.getItem('currentUser');
-            currentUser.value = savedUser ? JSON.parse(savedUser) : null;
-          } catch (e) {
-            currentUser.value = null;
-          }
+          currentUser.value = AppUtils.session.loadUser();
         };
 
         const loadCart = () => {
-          try {
-            const savedCart = localStorage.getItem('cart');
-            cart.value = savedCart ? JSON.parse(savedCart) : {};
-          } catch (e) {
-            cart.value = {};
-          }
+          cart.value = AppUtils.cart.load();
         };
 
         const saveCart = () => {
-          localStorage.setItem('cart', JSON.stringify(cart.value));
-          if (typeof syncHeaderCartCount === 'function') {
-            syncHeaderCartCount();
-          }
+          AppUtils.cart.save(cart.value);
         };
 
         const removeUnavailableCartItems = () => {
@@ -311,25 +300,10 @@
         });
 
         const getItemImage = (itemId) => {
-          const images = {
-            'F001': 'images/food/ayam_merah.png',
-            'F002': 'images/food/ayam_hijau.png',
-            'F003': 'images/food/brownsugar.png',
-            'F004': 'images/food/harimau.png',
-            'F005': 'images/food/bawean.png',
-            'F006': 'images/food/2rasa.png',
-            'F007': 'images/food/3rasa.png',
-            'D001': 'images/drink/orange.png',
-            'D002': 'images/drink/carrot.png',
-            'D003': 'images/drink/carrot_susu.png',
-            'D004': 'images/drink/tembikai.png',
-            'D005': 'images/drink/tembikai_susu.png',
-            'D006': 'images/drink/apple.png'
-          };
-          return images[itemId] || 'images/food/test.png';
+          return AppUtils.images.item(itemId);
         };
 
-        const increaseQty = (itemId) => {
+        const increaseQty = (itemId, shouldToast = true) => {
           if (cart.value[itemId]) {
             cart.value[itemId]++;
           } else {
@@ -338,6 +312,9 @@
           saveCart();
           if (typeof animateHeaderCartWiggle === 'function') {
             animateHeaderCartWiggle();
+          }
+          if (shouldToast && typeof showToast === 'function') {
+            showToast('Cart updated.');
           }
         };
 
@@ -350,6 +327,9 @@
             saveCart();
             if (typeof animateHeaderCartWiggle === 'function') {
               animateHeaderCartWiggle();
+            }
+            if (typeof showToast === 'function') {
+              showToast('Cart updated.');
             }
           }
         };

@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Our Menu - Universal Sambal</title>
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="../../js/app-utils.js"></script>
   <link rel="stylesheet" href="../../css/style.css">
 </head>
 
@@ -15,7 +16,7 @@
       <?php
       $root_path = "../../";
       $active_page = "menu";
-      include '../../includes/customer_header.php';
+      include '../../libs/customer_header.php';
       ?>
 
       <section class="page section">
@@ -24,7 +25,6 @@
             <p class="eyebrow">Fresh & Delicious</p>
             <h2>Our Menu</h2>
           </div>
-          <p>Browse our selection of authentic dishes and refreshing beverages.</p>
         </div>
 
         <div class="menu-controls">
@@ -37,9 +37,14 @@
           <input type="text" v-model="searchQuery" @input="syncMenuUrl" placeholder="Search for food or drinks..." class="search-input">
         </div>
 
-        <div v-if="loading" class="empty-panel">
-          <h1>Loading...</h1>
-          <p>Fetching our fresh menus from the kitchen...</p>
+        <div v-if="loading" class="loading-surface">
+          <div class="loading-card" role="status" aria-live="polite">
+            <span class="loading-spinner" aria-hidden="true"></span>
+            <strong>Loading</strong>
+          </div>
+          <div class="loading-skeleton-grid" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
         </div>
 
         <div v-else-if="availableMenu.length === 0 && soldOutMenu.length === 0" class="empty-panel">
@@ -99,9 +104,7 @@
         </div>
       </section>
 
-      <footer class="footer">
-        Universal Sambal Menu.
-      </footer>
+      <?php include '../../libs/footer.php'; ?>
     </main>
   </div>
 
@@ -117,14 +120,7 @@
         const searchQuery = ref('');
 
         const loadCart = () => {
-          try {
-            const savedCart = localStorage.getItem('cart');
-            if (savedCart) {
-              cart.value = JSON.parse(savedCart);
-            }
-          } catch (e) {
-            console.error('Failed to load cart:', e);
-          }
+          cart.value = AppUtils.cart.load();
         };
 
         const loadMenuFilters = () => {
@@ -163,11 +159,7 @@
         };
 
         const saveCart = () => {
-          localStorage.setItem('cart', JSON.stringify(cart.value));
-
-          if (typeof syncHeaderCartCount === 'function') {
-            syncHeaderCartCount();
-          }
+          AppUtils.cart.save(cart.value);
         };
 
         const removeUnavailableCartItems = () => {
@@ -219,22 +211,7 @@
         const soldOutMenu = computed(() => filteredMenu.value.filter((item) => !Number(item.is_available)));
 
         const getItemImage = (itemId) => {
-          const images = {
-            'F001': '../../images/food/ayam_merah.png',
-            'F002': '../../images/food/ayam_hijau.png',
-            'F003': '../../images/food/brownsugar.png',
-            'F004': '../../images/food/harimau.png',
-            'F005': '../../images/food/bawean.png',
-            'F006': '../../images/food/2rasa.png',
-            'F007': '../../images/food/3rasa.png',
-            'D001': '../../images/drink/orange.png',
-            'D002': '../../images/drink/carrot.png',
-            'D003': '../../images/drink/carrot_susu.png',
-            'D004': '../../images/drink/tembikai.png',
-            'D005': '../../images/drink/tembikai_susu.png',
-            'D006': '../../images/drink/apple.png'
-          };
-          return images[itemId] || '../../images/food/test.png';
+          return AppUtils.images.item(itemId, '../../');
         };
 
         const increaseQty = (itemId) => {
@@ -246,6 +223,9 @@
           saveCart();
           if (typeof animateHeaderCartWiggle === 'function') {
             animateHeaderCartWiggle();
+          }
+          if (typeof showToast === 'function') {
+            showToast('Cart updated.');
           }
         };
 
@@ -259,11 +239,14 @@
             if (typeof animateHeaderCartWiggle === 'function') {
               animateHeaderCartWiggle();
             }
+            if (typeof showToast === 'function') {
+              showToast('Cart updated.');
+            }
           }
         };
 
         const cartCount = computed(() => {
-          return Object.values(cart.value).reduce((sum, qty) => sum + qty, 0);
+          return AppUtils.cart.count(cart.value);
         });
 
         const cartIsEmpty = computed(() => {

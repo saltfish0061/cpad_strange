@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Profile - Universal Sambal</title>
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="../../js/app-utils.js"></script>
   <link rel="stylesheet" href="../../css/style.css">
 </head>
 
@@ -15,7 +16,7 @@
       <?php
         $root_path = "../../";
         $active_page = "profile";
-        include '../../includes/customer_header.php';
+        include '../../libs/customer_header.php';
       ?>
 
       <section class="page section profile-module">
@@ -24,18 +25,24 @@
             <p class="eyebrow">Customer profile</p>
             <h2>My Profile</h2>
           </div>
-          <p>Manage your username, phone number, address, and account password.</p>
         </div>
 
-        <div v-if="!currentUser" class="empty-panel">
+        <div v-if="authChecked && !currentUser" class="empty-panel">
           <h1>Login Required</h1>
           <p>Login first to view and update your profile.</p>
           <a class="cta" href="../auth/login.php">Login</a>
         </div>
 
-        <div v-else-if="profileLoading" class="empty-panel">
-          <h1>Loading Profile...</h1>
-          <p>Fetching your saved account details.</p>
+        <div v-else-if="!authChecked || profileLoading" class="loading-surface">
+          <div class="loading-card" role="status" aria-live="polite">
+            <span class="loading-spinner" aria-hidden="true"></span>
+            <strong>Loading</strong>
+          </div>
+          <div class="loading-skeleton-profile" aria-hidden="true">
+            <span class="profile-skeleton-summary"></span>
+            <span class="profile-skeleton-form"></span>
+            <span class="profile-skeleton-password"></span>
+          </div>
         </div>
 
         <div v-else class="profile-layout">
@@ -112,9 +119,7 @@
         </div>
       </section>
 
-      <footer class="footer">
-        Universal Sambal Profile.
-      </footer>
+      <?php include '../../libs/footer.php'; ?>
     </main>
   </div>
 
@@ -124,6 +129,7 @@
     createApp({
       setup() {
         const currentUser = ref(null);
+        const authChecked = ref(false);
         const profileLoading = ref(false);
         const profileSaving = ref(false);
         const passwordSaving = ref(false);
@@ -153,14 +159,9 @@
         };
 
         const loadCurrentUser = () => {
-          try {
-            const savedUser = localStorage.getItem('currentUser');
-            currentUser.value = savedUser ? JSON.parse(savedUser) : null;
-            syncProfileForm(currentUser.value);
-          } catch (e) {
-            currentUser.value = null;
-            syncProfileForm(null);
-          }
+          currentUser.value = AppUtils.session.loadUser();
+          syncProfileForm(currentUser.value);
+          authChecked.value = true;
         };
 
         const apiRequest = async (path, options = {}) => {
@@ -186,7 +187,7 @@
           try {
             const data = await apiRequest(`/profile/${currentUser.value.user_id}`);
             currentUser.value = data.user;
-            localStorage.setItem('currentUser', JSON.stringify(data.user));
+            AppUtils.session.saveUser(data.user);
             syncProfileForm(data.user);
           } catch (error) {
             profileError.value = error.message || 'Unable to load profile.';
@@ -207,7 +208,7 @@
               body: JSON.stringify(profileForm.value)
             });
             currentUser.value = data.user;
-            localStorage.setItem('currentUser', JSON.stringify(data.user));
+            AppUtils.session.saveUser(data.user);
             syncProfileForm(data.user);
             isEditingProfile.value = false;
             profileMessage.value = 'Profile updated.';
@@ -273,6 +274,7 @@
 
         return {
           changePassword,
+          authChecked,
           cancelEditingProfile,
           currentUser,
           isEditingProfile,

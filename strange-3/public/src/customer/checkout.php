@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Checkout - Universal Sambal</title>
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="../../js/app-utils.js"></script>
   <link rel="stylesheet" href="../../css/style.css">
 </head>
 
@@ -15,7 +16,7 @@
       <?php
         $root_path = "../../";
         $active_page = "cart";
-        include '../../includes/customer_header.php';
+        include '../../libs/customer_header.php';
       ?>
 
       <section class="page section">
@@ -60,14 +61,16 @@
                     :class="{ active: checkoutForm.deliveryMethod === 'pickup' }"
                     @click="checkoutForm.deliveryMethod = 'pickup'"
                   >
-                    Pickup
+                    <img src="../../images/assets/checkout/fulfillment/food-pickup.png" alt="Pickup">
+                    <span class="payment-option-label">Pickup</span>
                   </div>
                   <div
                     class="payment-method-card"
                     :class="{ active: checkoutForm.deliveryMethod === 'delivery' }"
                     @click="checkoutForm.deliveryMethod = 'delivery'"
                   >
-                    Delivery
+                    <img src="../../images/assets/checkout/fulfillment/food-delivery.png" alt="Delivery">
+                    <span class="payment-option-label">Delivery</span>
                   </div>
                 </div>
               </div>
@@ -79,21 +82,24 @@
                     :class="{ active: checkoutForm.paymentMethod === 'cod' }"
                     @click="checkoutForm.paymentMethod = 'cod'"
                   >
-                    Cash on Delivery
+                    <img src="../../images/assets/checkout/payment/dollar.png" alt="Cash">
+                    <span class="payment-option-label">Cash on Delivery</span>
                   </div>
                   <div 
                     class="payment-method-card"
                     :class="{ active: checkoutForm.paymentMethod === 'card' }"
                     @click="checkoutForm.paymentMethod = 'card'"
                   >
-                    Card Payment
+                    <img src="../../images/assets/checkout/payment/card.png" alt="Card">
+                    <span class="payment-option-label">Card Payment</span>
                   </div>
                   <div 
                     class="payment-method-card"
                     :class="{ active: checkoutForm.paymentMethod === 'qr' }"
                     @click="checkoutForm.paymentMethod = 'qr'"
                   >
-                    DuitNow QR
+                    <img src="../../images/assets/checkout/payment/qr icon.png" alt="Qr">
+                    <span class="payment-option-label">DuitNow QR</span>
                   </div>
                 </div>
               </div>
@@ -117,9 +123,7 @@
         </div>
       </section>
 
-      <footer class="footer">
-        Universal Sambal Checkout.
-      </footer>
+      <?php include '../../libs/footer.php'; ?>
     </main>
   </div>
 
@@ -142,21 +146,11 @@
         const submitting = ref(false);
 
         const loadCart = () => {
-          try {
-            const savedCart = localStorage.getItem('cart');
-            if (savedCart) {
-              cart.value = JSON.parse(savedCart);
-            }
-          } catch (e) {
-            console.error('Failed to load cart:', e);
-          }
+          cart.value = AppUtils.cart.load();
         };
 
         const saveCart = () => {
-          localStorage.setItem('cart', JSON.stringify(cart.value));
-          if (typeof syncHeaderCartCount === 'function') {
-            syncHeaderCartCount();
-          }
+          AppUtils.cart.save(cart.value);
         };
 
         const removeUnavailableCartItems = () => {
@@ -180,20 +174,19 @@
         };
 
         const saveOrderNote = () => {
-          localStorage.setItem('orderNote', checkoutForm.value.orderNote);
+          AppUtils.orderNote.save(checkoutForm.value.orderNote);
         };
 
         const loadCheckoutProfile = async () => {
           try {
-            const savedUser = localStorage.getItem('currentUser');
-            currentUser.value = savedUser ? JSON.parse(savedUser) : null;
+            currentUser.value = AppUtils.session.loadUser();
             if (!currentUser.value?.user_id) return;
 
             const res = await fetch(`../../api/profile/${currentUser.value.user_id}`);
             const data = await res.json();
             if (data.status === 'success') {
               currentUser.value = data.user;
-              localStorage.setItem('currentUser', JSON.stringify(data.user));
+              AppUtils.session.saveUser(data.user);
             }
           } catch (e) {
             console.error('Error loading checkout profile:', e);
@@ -201,12 +194,12 @@
             checkoutForm.value.name = currentUser.value?.name || '';
             checkoutForm.value.phone = currentUser.value?.phone || '';
             checkoutForm.value.address = currentUser.value?.address || '';
-            checkoutForm.value.orderNote = localStorage.getItem('orderNote') || '';
+            checkoutForm.value.orderNote = AppUtils.orderNote.load();
           }
         };
 
         const cartCount = computed(() => {
-          return Object.values(cart.value).reduce((sum, qty) => sum + qty, 0);
+          return AppUtils.cart.count(cart.value);
         });
 
         const fetchMenu = async () => {
@@ -251,17 +244,17 @@
 
         const submitOrder = async () => {
           if (!currentUser.value?.user_id) {
-            alert('Please login before placing an order.');
+            if (typeof showToast === 'function') showToast('Please login before placing an order.', 'error');
             return;
           }
 
           if (!checkoutForm.value.name || !checkoutForm.value.phone) {
-            alert('Please enter your username and phone number.');
+            if (typeof showToast === 'function') showToast('Please enter your username and phone number.', 'error');
             return;
           }
 
           if (checkoutForm.value.deliveryMethod === 'delivery' && !checkoutForm.value.address) {
-            alert('Please enter your delivery address.');
+            if (typeof showToast === 'function') showToast('Please enter your delivery address.', 'error');
             return;
           }
 
@@ -282,7 +275,7 @@
               throw new Error(message);
             }
             currentUser.value = profileData.user;
-            localStorage.setItem('currentUser', JSON.stringify(profileData.user));
+            AppUtils.session.saveUser(profileData.user);
 
             const res = await fetch('../../api/orders', {
               method: 'POST',
@@ -298,14 +291,15 @@
             if (data.status === 'success') {
               cart.value = {};
               saveCart();
-              localStorage.removeItem('orderNote');
+              AppUtils.orderNote.clear();
+              if (typeof showToast === 'function') showToast('Order placed successfully.');
               window.location.href = 'confirm_order.php?order_id=' + data.order_id;
             } else {
-              alert('Error: ' + data.message);
+              if (typeof showToast === 'function') showToast(data.message || 'Unable to place order.', 'error');
             }
           } catch (e) {
             console.error('Error placing order:', e);
-            alert('Failed to place order. Please try again.');
+            if (typeof showToast === 'function') showToast(e.message || 'Failed to place order. Please try again.', 'error');
           } finally {
             submitting.value = false;
           }

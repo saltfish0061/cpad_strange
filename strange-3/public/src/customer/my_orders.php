@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Orders - Universal Sambal</title>
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="../../js/app-utils.js"></script>
   <link rel="stylesheet" href="../../css/style.css">
 </head>
 
@@ -15,7 +16,7 @@
       <?php
         $root_path = "../../";
         $active_page = "orders";
-        include '../../includes/customer_header.php';
+        include '../../libs/customer_header.php';
       ?>
 
       <section class="page section">
@@ -43,9 +44,14 @@
           </div>
         </div>
 
-        <div v-if="loading" class="empty-panel">
-          <h1>Loading Orders...</h1>
-          <p>Fetching your order records from our servers...</p>
+        <div v-if="loading" class="loading-surface">
+          <div class="loading-card" role="status" aria-live="polite">
+            <span class="loading-spinner" aria-hidden="true"></span>
+            <strong>Loading</strong>
+          </div>
+          <div class="loading-skeleton-list" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
         </div>
 
         <div v-else-if="filteredOrders.length === 0" class="empty-panel">
@@ -71,9 +77,7 @@
         </div>
       </section>
 
-      <footer class="footer">
-        Universal Sambal Orders.
-      </footer>
+      <?php include '../../libs/footer.php'; ?>
     </main>
   </div>
 
@@ -89,24 +93,11 @@
         const orderTab = ref('active');
 
         const loadCurrentUser = () => {
-          try {
-            const savedUser = localStorage.getItem('currentUser');
-            currentUser.value = savedUser ? JSON.parse(savedUser) : null;
-          } catch (e) {
-            currentUser.value = null;
-          }
+          currentUser.value = AppUtils.session.loadUser();
         };
 
         const loadCartCount = () => {
-          try {
-            const savedCart = localStorage.getItem('cart');
-            if (savedCart) {
-              const cart = JSON.parse(savedCart);
-              cartCount.value = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
-            }
-          } catch (e) {
-            console.error('Failed to load cart:', e);
-          }
+          cartCount.value = AppUtils.cart.count(AppUtils.cart.load());
         };
 
         const fetchOrders = async () => {
