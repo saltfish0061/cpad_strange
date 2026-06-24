@@ -96,6 +96,9 @@
     }
   };
 
+  let toastTimer = null;
+  let toastLeaveTimer = null;
+
   const toast = {
     show(message, type = 'success') {
       if (!message) return;
@@ -109,14 +112,26 @@
         document.body.appendChild(stack);
       }
 
+      window.clearTimeout(toastTimer);
+      window.clearTimeout(toastLeaveTimer);
+
       const toastEl = document.createElement('div');
       toastEl.className = `toast-message ${type}`;
-      toastEl.textContent = message;
-      stack.appendChild(toastEl);
 
-      window.setTimeout(() => {
+      const iconEl = document.createElement('span');
+      iconEl.className = 'toast-icon';
+      iconEl.setAttribute('aria-hidden', 'true');
+
+      const copyEl = document.createElement('span');
+      copyEl.className = 'toast-copy';
+      copyEl.textContent = message;
+
+      toastEl.append(iconEl, copyEl);
+      stack.replaceChildren(toastEl);
+
+      toastTimer = window.setTimeout(() => {
         toastEl.classList.add('leaving');
-        window.setTimeout(() => toastEl.remove(), 180);
+        toastLeaveTimer = window.setTimeout(() => toastEl.remove(), 180);
       }, 2600);
     }
   };

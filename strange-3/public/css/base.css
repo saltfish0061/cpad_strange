@@ -585,12 +585,11 @@ button {
 
 .toast-stack {
   position: fixed;
-  right: 18px;
-  bottom: 22px;
-  z-index: 2000;
-  display: grid;
-  gap: 10px;
-  width: min(320px, calc(100vw - 28px));
+  top: 18px;
+  left: 50%;
+  z-index: 2200;
+  width: min(380px, calc(100vw - 28px));
+  transform: translateX(-50%);
   pointer-events: none;
 }
 
@@ -603,9 +602,14 @@ button {
 }
 
 .toast-message {
-  padding: 12px 14px;
+  --toast-icon-image: none;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px 12px 12px;
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: var(--radius-control);
   background: var(--white);
   color: var(--ink);
   box-shadow: 0 18px 40px rgba(67, 17, 13, 0.18);
@@ -615,11 +619,26 @@ button {
   animation: toast-enter 180ms ease both;
 }
 
+.toast-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background:
+    var(--toast-icon-image) center / 18px 18px no-repeat,
+    rgba(255, 224, 199, 0);
+}
+
+.toast-copy {
+  min-width: 0;
+}
+
 .toast-message.success {
+  --toast-icon-image: url("../images/assets/toast/toast-success.png");
   border-color: rgba(47, 111, 67, 0.2);
 }
 
 .toast-message.error {
+  --toast-icon-image: url("../images/assets/toast/toast-error.png");
   border-color: #f0b6aa;
   color: #9f2d1f;
 }
@@ -631,14 +650,14 @@ button {
 @keyframes toast-enter {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(-10px);
   }
 }
 
 @keyframes toast-leave {
   to {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(-10px);
   }
 }
 
