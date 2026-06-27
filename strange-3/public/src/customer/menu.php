@@ -3,9 +3,9 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Our Menu - Universal Sambal</title>
-  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="../../js/vue.global.prod.js"></script>
   <script src="../../js/app-utils.js"></script>
   <link rel="stylesheet" href="../../css/style.css">
 </head>
@@ -19,7 +19,7 @@
       include '../../libs/customer_header.php';
       ?>
 
-      <section class="page section">
+      <section class="page section menu-page">
         <div class="section-head">
           <div>
             <p class="eyebrow">Fresh & Delicious</p>
@@ -95,8 +95,7 @@
           </div>
         </div>
 
-        <div class="menu-checkout-container"
-          style="display: flex; justify-content: center; margin-top: 40px; margin-bottom: 20px;">
+        <div class="menu-checkout-container">
           <button class="cta-float" :disabled="cartIsEmpty" @click="goToCheckout"
             style="width: 100%; max-width: 320px; text-align: center; border: 0;">
             Proceed to Checkout ({{ cartCount }} {{ cartCount === 1 ? 'item' : 'items' }})

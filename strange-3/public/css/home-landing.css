@@ -214,6 +214,43 @@
   }
 }
 
+.home-picks-loading {
+  pointer-events: none;
+}
+
+.pick-skeleton {
+  min-height: 390px;
+  padding: 18px;
+  gap: 16px;
+}
+
+.pick-skeleton span,
+.pick-skeleton b,
+.pick-skeleton i {
+  display: block;
+  border-radius: 18px;
+  background:
+    linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.64), transparent),
+    #ebe7df;
+  background-size: 220% 100%, 100% 100%;
+  animation: skeleton-wave 1200ms ease-in-out infinite;
+}
+
+.pick-skeleton span {
+  min-height: 180px;
+}
+
+.pick-skeleton b {
+  width: 72%;
+  min-height: 24px;
+}
+
+.pick-skeleton i {
+  width: 46%;
+  min-height: 18px;
+  margin-top: auto;
+}
+
 .promo-grid {
   display: grid;
   grid-template-columns: 1fr 1.05fr;

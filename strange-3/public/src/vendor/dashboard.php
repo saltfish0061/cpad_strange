@@ -3,9 +3,9 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Vendor Dashboard - Universal Sambal</title>
-  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="../../js/vue.global.prod.js"></script>
   <script src="../../js/app-utils.js"></script>
   <link rel="stylesheet" href="../../css/style.css">
 </head>
@@ -184,8 +184,38 @@
                     <div class="vendor-panel-head">
                       <div>
                         <h2>Order Dashboard</h2>
-                        <span class="vendor-panel-subtitle">{{ vendorOrders.length }} total orders</span>
+                        <span class="vendor-panel-subtitle">{{ filteredVendorOrders.length }} of {{ vendorOrders.length }} orders</span>
                       </div>
+                      <button class="vendor-filter-toggle" :class="{ active: orderFiltersOpen }" type="button" @click="orderFiltersOpen = !orderFiltersOpen" aria-label="Order filters" title="Filter and sort orders">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                          <path d="M4 7h16"></path>
+                          <path d="M7 12h10"></path>
+                          <path d="M10 17h4"></path>
+                        </svg>
+                      </button>
+                    </div>
+                    <div v-if="orderFiltersOpen" class="vendor-filter-bar">
+                      <label>
+                        Status
+                        <select class="vendor-select" v-model="orderStatusFilter">
+                          <option value="all">All orders</option>
+                          <option value="pending">Pending</option>
+                          <option value="preparing">Preparing</option>
+                          <option value="ready">Ready</option>
+                          <option value="on_the_way">On the way</option>
+                          <option value="completed">Completed</option>
+                          <option value="cancelled">Cancelled</option>
+                        </select>
+                      </label>
+                      <label>
+                        Sort
+                        <select class="vendor-select" v-model="orderSort">
+                          <option value="newest">Newest first</option>
+                          <option value="oldest">Oldest first</option>
+                          <option value="highest">Highest total</option>
+                          <option value="lowest">Lowest total</option>
+                        </select>
+                      </label>
                     </div>
                     <table class="vendor-table">
                       <thead>
@@ -201,7 +231,7 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <tr v-for="order in vendorOrders" :key="order.order_id">
+                        <tr v-for="order in filteredVendorOrders" :key="order.order_id">
                           <td><button class="small-action" type="button" @click="viewOrder(order)">{{ order.order_id }}</button></td>
                           <td>{{ order.customer_name }}</td>
                           <td>{{ order.customer_phone }}</td>
@@ -229,7 +259,16 @@
                         <h2>{{ editingItemId ? 'Update Menu Item' : 'Add Menu Item' }}</h2>
                         <span class="vendor-panel-subtitle">{{ availableCount }} on stock - {{ soldOutCount }} sold out</span>
                       </div>
-                      <button v-if="editingItemId" class="small-action" type="button" @click="resetMenuForm">Cancel Edit</button>
+                      <div class="inline-actions">
+                        <button class="vendor-filter-toggle" :class="{ active: menuFiltersOpen }" type="button" @click="menuFiltersOpen = !menuFiltersOpen" aria-label="Menu filters" title="Filter and sort menu items">
+                          <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M4 7h16"></path>
+                            <path d="M7 12h10"></path>
+                            <path d="M10 17h4"></path>
+                          </svg>
+                        </button>
+                        <button v-if="editingItemId" class="small-action" type="button" @click="resetMenuForm">Cancel Edit</button>
+                      </div>
                     </div>
                     <form class="vendor-form" @submit.prevent="saveMenuItem">
                       <label>Name<input class="vendor-input" v-model="menuForm.name" required></label>
@@ -247,12 +286,38 @@
                         <button class="small-action" type="button" @click="resetMenuForm">Clear</button>
                       </div>
                     </form>
+                    <div v-if="menuFiltersOpen" class="vendor-filter-bar">
+                      <label>
+                        Stock
+                        <select class="vendor-select" v-model="menuStockFilter">
+                          <option value="all">All stock</option>
+                          <option value="available">On stock</option>
+                          <option value="sold-out">Sold out</option>
+                        </select>
+                      </label>
+                      <label>
+                        Category
+                        <select class="vendor-select" v-model="menuCategoryFilter">
+                          <option value="all">All categories</option>
+                          <option value="food">Food</option>
+                          <option value="drink">Drink</option>
+                        </select>
+                      </label>
+                      <label>
+                        Sort
+                        <select class="vendor-select" v-model="menuSort">
+                          <option value="name">Name A-Z</option>
+                          <option value="price-high">Price high-low</option>
+                          <option value="price-low">Price low-high</option>
+                        </select>
+                      </label>
+                    </div>
                     <table class="vendor-table menu-items-table">
                       <thead>
                         <tr><th>Item</th><th>Category</th><th>Price</th><th>Availability</th><th>Actions</th></tr>
                       </thead>
                       <tbody>
-                        <tr v-for="item in vendorMenu" :key="item.item_id">
+                        <tr v-for="item in filteredVendorMenu" :key="item.item_id">
                           <td><strong>{{ item.name }}</strong><div class="muted-text">{{ item.item_id }}</div></td>
                           <td>{{ item.category }}</td>
                           <td>{{ formatMoney(item.price) }}</td>
@@ -342,6 +407,13 @@
           popular_items: [],
           status_counts: []
         });
+        const orderStatusFilter = ref(localStorage.getItem('vendorOrderStatusFilter') || 'all');
+        const orderSort = ref(localStorage.getItem('vendorOrderSort') || 'newest');
+        const menuStockFilter = ref(localStorage.getItem('vendorMenuStockFilter') || 'all');
+        const menuCategoryFilter = ref(localStorage.getItem('vendorMenuCategoryFilter') || 'all');
+        const menuSort = ref(localStorage.getItem('vendorMenuSort') || 'name');
+        const orderFiltersOpen = ref(false);
+        const menuFiltersOpen = ref(false);
         const selectedOrder = ref(null);
         const selectedOrderItems = ref([]);
         const editingItemId = ref('');
@@ -526,6 +598,34 @@
         };
 
         const pendingOrders = computed(() => vendorOrders.value.filter((order) => order.status !== 'completed' && order.status !== 'cancelled'));
+        const filteredVendorOrders = computed(() => {
+          const filtered = vendorOrders.value.filter((order) => {
+            return orderStatusFilter.value === 'all' || order.status === orderStatusFilter.value;
+          });
+
+          return [...filtered].sort((a, b) => {
+            if (orderSort.value === 'oldest') return String(a.order_id).localeCompare(String(b.order_id));
+            if (orderSort.value === 'highest') return Number(b.total_amount || 0) - Number(a.total_amount || 0);
+            if (orderSort.value === 'lowest') return Number(a.total_amount || 0) - Number(b.total_amount || 0);
+            return String(b.order_id).localeCompare(String(a.order_id));
+          });
+        });
+        const filteredVendorMenu = computed(() => {
+          const filtered = vendorMenu.value.filter((item) => {
+            const stockMatches =
+              menuStockFilter.value === 'all' ||
+              (menuStockFilter.value === 'available' && Number(item.is_available)) ||
+              (menuStockFilter.value === 'sold-out' && !Number(item.is_available));
+            const categoryMatches = menuCategoryFilter.value === 'all' || item.category === menuCategoryFilter.value;
+            return stockMatches && categoryMatches;
+          });
+
+          return [...filtered].sort((a, b) => {
+            if (menuSort.value === 'price-high') return Number(b.price || 0) - Number(a.price || 0);
+            if (menuSort.value === 'price-low') return Number(a.price || 0) - Number(b.price || 0);
+            return String(a.name || '').localeCompare(String(b.name || ''));
+          });
+        });
         const showVendorInitialLoading = computed(() => vendorLoading.value && !vendorLoaded.value);
         const availableCount = computed(() => vendorMenu.value.filter((item) => Number(item.is_available)).length);
         const soldOutCount = computed(() => vendorMenu.value.filter((item) => !Number(item.is_available)).length);
@@ -539,6 +639,11 @@
         watch(vendorTab, (tab) => {
           localStorage.setItem('vendorTab', tab);
         });
+        watch(orderStatusFilter, (value) => localStorage.setItem('vendorOrderStatusFilter', value));
+        watch(orderSort, (value) => localStorage.setItem('vendorOrderSort', value));
+        watch(menuStockFilter, (value) => localStorage.setItem('vendorMenuStockFilter', value));
+        watch(menuCategoryFilter, (value) => localStorage.setItem('vendorMenuCategoryFilter', value));
+        watch(menuSort, (value) => localStorage.setItem('vendorMenuSort', value));
 
         onMounted(() => {
           if (canAccessVendor) loadVendorData();
@@ -549,12 +654,21 @@
           deleteMenuItem,
           editMenuItem,
           editingItemId,
+          filteredVendorMenu,
+          filteredVendorOrders,
           formatDeliveryMethod,
           formatMoney,
           formatOrderStatus,
           loadVendorData,
+          menuCategoryFilter,
           menuForm,
+          menuSort,
+          menuStockFilter,
+          menuFiltersOpen,
           orderCountByStatus,
+          orderFiltersOpen,
+          orderSort,
+          orderStatusFilter,
           pendingOrders,
           popularBarWidth,
           resetMenuForm,

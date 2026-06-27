@@ -3,9 +3,9 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Your Cart - Universal Sambal</title>
-  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="../../js/vue.global.prod.js"></script>
   <script src="../../js/app-utils.js"></script>
   <link rel="stylesheet" href="../../css/style.css">
 </head>
@@ -19,12 +19,15 @@
         include '../../libs/customer_header.php';
       ?>
 
-      <section class="page section">
+      <section class="page section cart-page">
         <div class="section-head">
           <div>
             <p class="eyebrow">Your Selection</p>
             <h2>Your Shopping Cart</h2>
           </div>
+          <button v-if="!cartChecking && !cartIsEmpty" class="small-action cart-clear-action" type="button" @click="openClearCartConfirm">
+            Clear Cart
+          </button>
         </div>
 
         <div v-if="cartChecking" class="loading-surface">
@@ -127,6 +130,17 @@
           </div>
           <a class="cta" href="checkout.php">Proceed to Checkout</a>
         </div>
+
+        <div v-if="clearCartConfirmOpen" class="cart-confirm-backdrop" @click.self="closeClearCartConfirm">
+          <div class="cart-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="clear-cart-title">
+            <h3 id="clear-cart-title">Clear cart?</h3>
+            <p>This will remove every item from your cart. Your order note will stay untouched.</p>
+            <div class="cart-confirm-actions">
+              <button class="small-action" type="button" @click="closeClearCartConfirm">Cancel</button>
+              <button class="danger-action" type="button" @click="confirmClearCart">Clear Cart</button>
+            </div>
+          </div>
+        </div>
       </section>
 
       <?php include '../../libs/footer.php'; ?>
@@ -146,6 +160,7 @@
         const deleteReadyCartItem = ref(null);
         const dragState = ref(null);
         const dragOffsets = ref({});
+        const clearCartConfirmOpen = ref(false);
         const cartRevealOffset = -72;
         const cartMaxDragOffset = -112;
         const cartReleaseDeleteOffset = -96;
@@ -239,6 +254,9 @@
         };
 
         const removeItem = (itemId) => {
+          const quantity = cart.value[itemId] || 0;
+          if (!quantity) return;
+
           delete cart.value[itemId];
           revealedCartItem.value = null;
           deleteReadyCartItem.value = null;
@@ -246,6 +264,26 @@
           saveCart();
           if (typeof showToast === 'function') {
             showToast('Item removed from cart.');
+          }
+        };
+
+        const openClearCartConfirm = () => {
+          clearCartConfirmOpen.value = true;
+        };
+
+        const closeClearCartConfirm = () => {
+          clearCartConfirmOpen.value = false;
+        };
+
+        const confirmClearCart = () => {
+          cart.value = {};
+          revealedCartItem.value = null;
+          deleteReadyCartItem.value = null;
+          dragOffsets.value = {};
+          closeClearCartConfirm();
+          saveCart();
+          if (typeof showToast === 'function') {
+            showToast('Cart cleared.');
           }
         };
 
@@ -354,8 +392,12 @@
           cartItemsList,
           cartCount,
           cartTotal,
+          clearCartConfirmOpen,
+          closeClearCartConfirm,
+          confirmClearCart,
           increaseQty,
           decreaseQty,
+          openClearCartConfirm,
           removeItem,
           revealedCartItem,
           deleteReadyCartItem,

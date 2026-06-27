@@ -3,10 +3,10 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Universal Sambal</title>
-  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
-  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  <script src="js/vue.global.prod.js"></script>
+  <script src="js/lottie-player.js"></script>
   <script src="js/app-utils.js"></script>
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -98,14 +98,20 @@
           </div>
         </section>
 
-        <section class="page section">
+        <section class="page section" v-cloak>
           <div class="section-head top-picks">
             <div>
               <h2>Our Top Picks</h2>
             </div>
           </div>
 
-          <div class="card-grid">
+          <div v-if="homeLoading" class="card-grid home-picks-loading" aria-hidden="true">
+            <article class="food-card pick-skeleton"><span></span><b></b><i></i></article>
+            <article class="food-card pick-skeleton"><span></span><b></b><i></i></article>
+            <article class="food-card pick-skeleton"><span></span><b></b><i></i></article>
+          </div>
+
+          <div v-else class="card-grid">
             <article class="food-card" v-for="item in topPickItems" :key="item.item_id">
               <img :src="getItemImage(item.item_id)" :alt="item.name">
               <div class="food-card-body">
@@ -124,7 +130,7 @@
           </div>
         </section>
 
-        <section class="spice-slider-band">
+        <section class="spice-slider-band" v-cloak>
           <div class="page section spice-layout">
             <div class="section-head center-text">
               <div>
@@ -145,7 +151,15 @@
                 </div>
               </div>
 
-              <transition name="combo-swap" mode="out-in">
+              <div v-if="homeLoading" class="combo-loading-panel" aria-hidden="true">
+                <article class="combo-card combo-skeleton-card"><span></span><b></b><i></i></article>
+                <div class="combo-plus">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                </div>
+                <article class="combo-card combo-skeleton-card"><span></span><b></b><i></i></article>
+              </div>
+
+              <transition v-else name="combo-swap" mode="out-in">
                 <div class="combo-showcase" v-if="suggestedCombo" :key="spiceLevel">
                   <article class="combo-card food-combo" :class="{ 'sold-out-card': !Number(suggestedCombo.food.is_available) }">
                     <img :src="getItemImage(suggestedCombo.food.item_id)" :alt="suggestedCombo.food.name">
@@ -179,7 +193,7 @@
                 </div>
               </transition>
 
-              <div class="combo-actions" v-if="suggestedCombo">
+              <div class="combo-actions" v-if="suggestedCombo && !homeLoading">
                 <button type="button" class="cta cta-combo" :disabled="comboUnavailable" @click="addComboToCart">
                   {{ comboUnavailable ? 'Combo Currently Sold Out' : 'Add Perfect Combo to Cart' }}
                 </button>
@@ -201,6 +215,7 @@
         const currentUser = ref(null);
         const cart = ref({});
         const menuItems = ref([]);
+        const homeLoading = ref(true);
         const topPickIds = ['F001', 'F002', 'D005'];
         const savedSpiceLevel = Number(localStorage.getItem('spiceLevel'));
         const spiceLevel = ref(savedSpiceLevel >= 1 && savedSpiceLevel <= 5 ? savedSpiceLevel : 3);
@@ -283,6 +298,8 @@
             }
           } catch (e) {
             console.error('Error fetching top picks:', e);
+          } finally {
+            homeLoading.value = false;
           }
         };
 
@@ -353,6 +370,7 @@
           currentUser,
           decreaseQty,
           getItemImage,
+          homeLoading,
           increaseQty,
           isVendor,
           topPickItems,

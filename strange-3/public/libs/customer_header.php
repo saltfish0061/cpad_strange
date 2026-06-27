@@ -27,7 +27,7 @@
         <circle cx="20" cy="21" r="1"></circle>
         <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
       </svg>
-      <span class="header-cart-count">0</span>
+      <span class="header-cart-count"><script>document.write(AppUtils.cart.count(AppUtils.cart.load()))</script></span>
     </a>
 
     <button class="mobile-nav-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="topbar-menu">
@@ -62,13 +62,60 @@
           <circle cx="20" cy="21" r="1"></circle>
           <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
         </svg>
-        <span id="header-cart-count" class="header-cart-count">0</span>
+        <span id="header-cart-count" class="header-cart-count"><script>document.write(AppUtils.cart.count(AppUtils.cart.load()))</script></span>
       </a>
       <a id="header-login-link" class="pill-button primary" href="<?php echo $root_path; ?>src/auth/login.php">Login</a>
       <button id="header-logout-button" class="pill-button primary" type="button" hidden>Logout</button>
     </div>
   </div>
 </header>
+
+<?php if ($active_page !== 'vendor') : ?>
+<nav class="apk-bottom-nav" aria-label="App navigation">
+  <a class="apk-tab <?php echo ($active_page === 'home') ? 'active' : ''; ?>" href="<?php echo $root_path; ?>index.php">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M3 10.5 12 3l9 7.5"></path>
+      <path d="M5 9.5V21h5v-6h4v6h5V9.5"></path>
+    </svg>
+    <span>Home</span>
+  </a>
+  <a class="apk-tab <?php echo ($active_page === 'orders') ? 'active' : ''; ?>" href="<?php echo $root_path; ?>src/customer/my_orders.php">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M7 3h10a2 2 0 0 1 2 2v16l-3-2-2 2-2-2-2 2-2-2-3 2V5a2 2 0 0 1 2-2Z"></path>
+      <path d="M9 8h6"></path>
+      <path d="M9 12h6"></path>
+    </svg>
+    <span>Orders</span>
+  </a>
+  <a class="apk-tab apk-tab-primary <?php echo ($active_page === 'menu') ? 'active' : ''; ?>" href="<?php echo $root_path; ?>src/customer/menu.php" aria-label="Order">
+    <span class="apk-tab-primary-icon">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 12h16"></path>
+        <path d="M12 4v16"></path>
+      </svg>
+    </span>
+    <span>Order</span>
+  </a>
+  <a class="apk-tab <?php echo ($active_page === 'cart') ? 'active' : ''; ?>" href="<?php echo $root_path; ?>src/customer/cart.php">
+    <span class="apk-tab-badge-wrap">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="9" cy="21" r="1"></circle>
+        <circle cx="20" cy="21" r="1"></circle>
+        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+      </svg>
+      <span class="apk-cart-badge header-cart-count"><script>document.write(AppUtils.cart.count(AppUtils.cart.load()))</script></span>
+    </span>
+    <span>Cart</span>
+  </a>
+  <a class="apk-tab <?php echo ($active_page === 'profile') ? 'active' : ''; ?>" href="<?php echo $root_path; ?>src/customer/profile.php">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="8" r="4"></circle>
+      <path d="M4 21a8 8 0 0 1 16 0"></path>
+    </svg>
+    <span>Profile</span>
+  </a>
+</nav>
+<?php endif; ?>
 
 <script>
   // Dynamically sync cart count badge from localStorage
@@ -129,6 +176,10 @@
     });
   };
   
+  syncHeaderCartCount();
+  syncHeaderVendorLink();
+  syncHeaderAuth();
+
   // Set up listeners
   document.addEventListener('DOMContentLoaded', () => {
     syncHeaderCartCount();

@@ -35,7 +35,7 @@
     },
     save(nextCart) {
       writeJson('cart', nextCart || {});
-      window.syncHeaderCartCount?.();
+      header.syncCartCount();
     },
     count(nextCart) {
       return Object.values(nextCart || {}).reduce((sum, qty) => sum + Number(qty || 0), 0);
