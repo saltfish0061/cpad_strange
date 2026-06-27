@@ -145,10 +145,16 @@
       });
     },
     syncVendorLink() {
-      const vendorLink = document.getElementById('header-vendor-link');
-      if (!vendorLink) return;
       const currentUser = session.loadUser();
-      vendorLink.hidden = currentUser?.role !== 'admin';
+      const isVendor = currentUser?.role === 'admin';
+
+      document.querySelectorAll('[data-vendor-link]').forEach((vendorLink) => {
+        vendorLink.hidden = !isVendor;
+      });
+
+      document.querySelectorAll('[data-profile-link]').forEach((profileLink) => {
+        profileLink.hidden = isVendor;
+      });
     },
     syncAuth() {
       const loginLink = document.getElementById('header-login-link');

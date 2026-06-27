@@ -25,6 +25,15 @@
             <p class="eyebrow">Customer profile</p>
             <h2>My Profile</h2>
           </div>
+          <a data-vendor-link class="apk-page-shortcut" href="../vendor/dashboard.php" aria-label="Open dashboard" hidden>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 4h16v16H4z"></path>
+              <path d="M8 9h8"></path>
+              <path d="M8 13h5"></path>
+              <path d="M8 17h3"></path>
+            </svg>
+            <span>Dashboard</span>
+          </a>
         </div>
 
         <div v-if="authChecked && !currentUser" class="empty-panel">

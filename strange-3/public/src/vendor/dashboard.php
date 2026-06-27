@@ -26,6 +26,13 @@
                 <h2>Vendor Command Center</h2>
               </div>
               <div class="vendor-head-actions">
+                <a class="apk-page-shortcut" href="../customer/profile.php" aria-label="Open profile">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="8" r="4"></circle>
+                    <path d="M4 21a8 8 0 0 1 16 0"></path>
+                  </svg>
+                  <span>Profile</span>
+                </a>
                 <span class="vendor-live-pill">{{ pendingOrders.length }} active orders</span>
                 <button class="vendor-refresh" type="button" @click="loadVendorData" :disabled="vendorLoading" :aria-label="vendorLoading ? 'Refreshing data' : 'Refresh data'" :title="vendorLoading ? 'Refreshing...' : 'Refresh data'">
                   <svg viewBox="0 0 24 24" aria-hidden="true">

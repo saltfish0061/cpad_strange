@@ -43,7 +43,7 @@
       <a class="nav-link <?php echo ($active_page === 'menu') ? 'active' : ''; ?>" data-page="menu" href="<?php echo $root_path; ?>src/customer/menu.php">Menu</a>
       <a class="nav-link <?php echo ($active_page === 'orders') ? 'active' : ''; ?>" data-page="orders" href="<?php echo $root_path; ?>src/customer/my_orders.php">Orders</a>
       <a class="nav-link <?php echo ($active_page === 'profile') ? 'active' : ''; ?>" data-page="profile" href="<?php echo $root_path; ?>src/customer/profile.php">Profile</a>
-      <a id="header-vendor-link" class="nav-link <?php echo ($active_page === 'vendor') ? 'active' : ''; ?>" data-page="vendor" href="<?php echo $root_path; ?>src/vendor/dashboard.php" hidden>Dashboard</a>
+      <a id="header-vendor-link" data-vendor-link class="nav-link <?php echo ($active_page === 'vendor') ? 'active' : ''; ?>" data-page="vendor" href="<?php echo $root_path; ?>src/vendor/dashboard.php" hidden>Dashboard</a>
     </nav>
 
     <div class="top-actions">
@@ -70,7 +70,6 @@
   </div>
 </header>
 
-<?php if ($active_page !== 'vendor') : ?>
 <nav class="apk-bottom-nav" aria-label="App navigation">
   <a class="apk-tab <?php echo ($active_page === 'home') ? 'active' : ''; ?>" href="<?php echo $root_path; ?>index.php">
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -107,15 +106,23 @@
     </span>
     <span>Cart</span>
   </a>
-  <a class="apk-tab <?php echo ($active_page === 'profile') ? 'active' : ''; ?>" href="<?php echo $root_path; ?>src/customer/profile.php">
+  <a data-profile-link class="apk-tab <?php echo ($active_page === 'profile') ? 'active' : ''; ?>" href="<?php echo $root_path; ?>src/customer/profile.php" <?php echo ($active_page === 'vendor') ? 'hidden' : ''; ?>>
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <circle cx="12" cy="8" r="4"></circle>
       <path d="M4 21a8 8 0 0 1 16 0"></path>
     </svg>
     <span>Profile</span>
   </a>
+  <a id="apk-vendor-link" data-vendor-link class="apk-tab <?php echo ($active_page === 'vendor') ? 'active' : ''; ?>" href="<?php echo $root_path; ?>src/vendor/dashboard.php" <?php echo ($active_page === 'vendor') ? '' : 'hidden'; ?>>
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4 4h16v16H4z"></path>
+      <path d="M8 9h8"></path>
+      <path d="M8 13h5"></path>
+      <path d="M8 17h3"></path>
+    </svg>
+    <span>Dashboard</span>
+  </a>
 </nav>
-<?php endif; ?>
 
 <script>
   // Dynamically sync cart count badge from localStorage
