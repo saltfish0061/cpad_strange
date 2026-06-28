@@ -37,6 +37,14 @@
     </button>
   </div>
 
+  <button class="header-logout-icon" data-logout-trigger type="button" aria-label="Logout" hidden>
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+      <path d="M16 17l5-5-5-5"></path>
+      <path d="M21 12H9"></path>
+    </svg>
+  </button>
+
   <div id="topbar-menu" class="topbar-menu">
     <nav class="nav" aria-label="Main navigation">
       <a class="nav-link <?php echo ($active_page === 'home') ? 'active' : ''; ?>" data-page="home" href="<?php echo $root_path; ?>index.php">Home</a>
@@ -65,10 +73,21 @@
         <span id="header-cart-count" class="header-cart-count"><script>document.write(AppUtils.cart.count(AppUtils.cart.load()))</script></span>
       </a>
       <a id="header-login-link" class="pill-button primary" href="<?php echo $root_path; ?>src/auth/login.php">Login</a>
-      <button id="header-logout-button" class="pill-button primary" type="button" hidden>Logout</button>
+      <button id="header-logout-button" class="pill-button primary" data-logout-trigger type="button" hidden>Logout</button>
     </div>
   </div>
 </header>
+
+<div id="logout-confirm" class="logout-confirm-backdrop" hidden>
+  <div class="logout-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="logout-confirm-title">
+    <h3 id="logout-confirm-title">Logout?</h3>
+    <p>You will return to the home page. Your current session will be cleared.</p>
+    <div class="logout-confirm-actions">
+      <button id="logout-cancel-button" class="small-action" type="button">Cancel</button>
+      <button id="logout-confirm-button" class="danger-action" type="button">Logout</button>
+    </div>
+  </div>
+</div>
 
 <nav class="apk-bottom-nav" aria-label="App navigation">
   <a class="apk-tab <?php echo ($active_page === 'home') ? 'active' : ''; ?>" href="<?php echo $root_path; ?>index.php">
@@ -139,15 +158,35 @@
   };
 
   const setupHeaderLogout = () => {
-    const logoutButton = document.getElementById('header-logout-button');
-    if (!logoutButton) return;
+    const logoutButtons = document.querySelectorAll('[data-logout-trigger]');
+    const logoutDialog = document.getElementById('logout-confirm');
+    const cancelButton = document.getElementById('logout-cancel-button');
+    const confirmButton = document.getElementById('logout-confirm-button');
+    if (!logoutButtons.length || !logoutDialog || !cancelButton || !confirmButton) return;
 
-    logoutButton.addEventListener('click', () => {
+    const openLogoutDialog = () => {
+      logoutDialog.hidden = false;
+    };
+
+    const closeLogoutDialog = () => {
+      logoutDialog.hidden = true;
+    };
+
+    const confirmLogout = () => {
       AppUtils.session.clear();
       syncHeaderAuth();
       syncHeaderVendorLink();
       syncHeaderCartCount();
       window.location.href = '<?php echo $root_path; ?>index.php';
+    };
+
+    logoutButtons.forEach((logoutButton) => {
+      logoutButton.addEventListener('click', openLogoutDialog);
+    });
+    cancelButton.addEventListener('click', closeLogoutDialog);
+    confirmButton.addEventListener('click', confirmLogout);
+    logoutDialog.addEventListener('click', (event) => {
+      if (event.target === logoutDialog) closeLogoutDialog();
     });
   };
 

@@ -158,12 +158,14 @@
     },
     syncAuth() {
       const loginLink = document.getElementById('header-login-link');
-      const logoutButton = document.getElementById('header-logout-button');
-      if (!loginLink || !logoutButton) return;
+      const logoutButtons = document.querySelectorAll('[data-logout-trigger]');
+      if (!loginLink) return;
 
       const currentUser = session.loadUser();
       loginLink.hidden = Boolean(currentUser);
-      logoutButton.hidden = !currentUser;
+      logoutButtons.forEach((logoutButton) => {
+        logoutButton.hidden = !currentUser;
+      });
     },
     syncAll() {
       header.syncCartCount();

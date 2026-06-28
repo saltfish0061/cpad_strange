@@ -142,6 +142,34 @@ button {
   padding: 0 12px;
 }
 
+.header-logout-icon {
+  display: none;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--white);
+  cursor: pointer;
+}
+
+.header-logout-icon svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.header-logout-icon[hidden] {
+  display: none !important;
+}
+
 .toggle-bar {
   position: absolute;
   width: 20px;
@@ -627,6 +655,11 @@ button {
   max-width: 100%;
 }
 
+.android-app .header-logout-icon {
+  display: grid;
+  margin-left: auto;
+}
+
 .android-app .apk-bottom-nav {
   position: fixed;
   right: 12px;
@@ -817,6 +850,48 @@ button {
   width: min(380px, calc(100vw - 28px));
   transform: translateX(-50%);
   pointer-events: none;
+}
+
+.logout-confirm-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2450;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(23, 23, 23, 0.42);
+  backdrop-filter: blur(8px);
+}
+
+.logout-confirm-backdrop[hidden] {
+  display: none !important;
+}
+
+.logout-confirm-dialog {
+  width: min(380px, 100%);
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-panel);
+  background: var(--white);
+  color: var(--ink);
+  box-shadow: 0 22px 60px rgba(67, 17, 13, 0.22);
+}
+
+.logout-confirm-dialog h3 {
+  margin: 0 0 8px;
+  font-size: 24px;
+}
+
+.logout-confirm-dialog p {
+  margin: 0 0 18px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.logout-confirm-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
 }
 
 .cta:disabled,
