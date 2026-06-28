@@ -3,9 +3,10 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Your Cart - Universal Sambal</title>
-  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="../../js/vue.global.prod.js"></script>
+  <script src="../../js/app-utils.js"></script>
   <link rel="stylesheet" href="../../css/style.css">
 </head>
 
@@ -15,18 +16,34 @@
       <?php
         $root_path = "../../";
         $active_page = "cart";
-        include '../../includes/customer_header.php';
+        include '../../libs/customer_header.php';
       ?>
 
-      <section class="page section">
+      <section class="page section cart-page">
         <div class="section-head">
           <div>
             <p class="eyebrow">Your Selection</p>
             <h2>Your Shopping Cart</h2>
           </div>
+          <button v-if="!cartChecking && !cartIsEmpty" class="small-action cart-clear-action" type="button" @click="openClearCartConfirm">
+            Clear Cart
+          </button>
         </div>
 
-        <div v-if="cartIsEmpty" class="empty-panel">
+        <div v-if="cartChecking" class="loading-surface">
+          <div class="loading-card" role="status" aria-live="polite">
+            <span class="loading-spinner" aria-hidden="true"></span>
+            <strong>Loading</strong>
+          </div>
+          <div class="loading-skeleton-cart" aria-hidden="true">
+            <span class="cart-skeleton-item"></span>
+            <span class="cart-skeleton-summary"></span>
+            <span class="cart-skeleton-item"></span>
+            <span class="cart-skeleton-item"></span>
+          </div>
+        </div>
+
+        <div v-else-if="cartIsEmpty" class="empty-panel">
           <h1>Your Cart is Empty</h1>
           <p>Add some delicious meals or refreshing drinks to your cart to get started.</p>
           <a class="cta" href="menu.php" style="width: auto;">Explore Menu</a>
@@ -34,21 +51,48 @@
 
         <div v-else class="cart-layout">
           <div class="cart-items-list">
-            <div class="cart-item-card" v-for="item in cartItemsList" :key="item.item_id">
-              <img :src="getItemImage(item.item_id)" :alt="item.name" class="cart-item-img">
-              <div class="cart-item-info">
-                <h4>{{ item.name }}</h4>
-                <p>RM {{ parseFloat(item.price).toFixed(2) }}</p>
+            <div
+              class="cart-item-shell"
+              :class="{
+                revealed: revealedCartItem === item.item_id,
+                dragging: dragState?.itemId === item.item_id,
+                'release-ready': deleteReadyCartItem === item.item_id
+              }"
+              v-for="item in cartItemsList"
+              :key="item.item_id"
+            >
+              <button class="cart-delete-reveal" @click="removeItem(item.item_id)" aria-label="Remove item">
+                <svg class="trash-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M3 6h18"></path>
+                  <path d="M8 6V4h8v2"></path>
+                  <path d="M6 6l1 15h10l1-15"></path>
+                  <path d="M10 11v6"></path>
+                  <path d="M14 11v6"></path>
+                </svg>
+              </button>
+
+              <div
+                class="cart-item-card"
+                :style="{ transform: `translateX(${getCartItemOffset(item.item_id)}px)` }"
+                @pointerdown="startCartItemDrag($event, item.item_id)"
+                @pointermove="moveCartItemDrag"
+                @pointerup="endCartItemDrag"
+                @pointercancel="endCartItemDrag"
+              >
+                <img :src="getItemImage(item.item_id)" :alt="item.name" class="cart-item-img">
+                <div class="cart-item-info">
+                  <h4>{{ item.name }}</h4>
+                  <p>RM {{ parseFloat(item.price).toFixed(2) }}</p>
+                  <div class="qty-controls cart-item-qty">
+                    <button class="qty-btn" @click="decreaseQty(item.item_id)">-</button>
+                    <span class="qty-val">{{ item.quantity }}</span>
+                    <button class="qty-btn" @click="increaseQty(item.item_id)">+</button>
+                  </div>
+                </div>
+                <div class="cart-item-price">
+                  RM {{ item.subtotal.toFixed(2) }}
+                </div>
               </div>
-              <div class="qty-controls">
-                <button class="qty-btn" @click="decreaseQty(item.item_id)">-</button>
-                <span class="qty-val">{{ item.quantity }}</span>
-                <button class="qty-btn" @click="increaseQty(item.item_id)">+</button>
-              </div>
-              <div class="cart-item-price" style="min-width: 80px; text-align: right;">
-                RM {{ item.subtotal.toFixed(2) }}
-              </div>
-              <button class="delete-item-btn" @click="removeItem(item.item_id)">&times; Remove</button>
             </div>
           </div>
 
@@ -86,11 +130,20 @@
           </div>
           <a class="cta" href="checkout.php">Proceed to Checkout</a>
         </div>
+
+        <div v-if="clearCartConfirmOpen" class="cart-confirm-backdrop" @click.self="closeClearCartConfirm">
+          <div class="cart-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="clear-cart-title">
+            <h3 id="clear-cart-title">Clear cart?</h3>
+            <p>This will remove every item from your cart. Your order note will stay untouched.</p>
+            <div class="cart-confirm-actions">
+              <button class="small-action" type="button" @click="closeClearCartConfirm">Cancel</button>
+              <button class="danger-action" type="button" @click="confirmClearCart">Clear Cart</button>
+            </div>
+          </div>
+        </div>
       </section>
 
-      <footer class="footer">
-        Universal Sambal Cart.
-      </footer>
+      <?php include '../../libs/footer.php'; ?>
     </main>
   </div>
 
@@ -101,25 +154,23 @@
       setup() {
         const cart = ref({});
         const menuItems = ref([]);
+        const cartChecking = ref(true);
         const orderNote = ref('');
+        const revealedCartItem = ref(null);
+        const deleteReadyCartItem = ref(null);
+        const dragState = ref(null);
+        const dragOffsets = ref({});
+        const clearCartConfirmOpen = ref(false);
+        const cartRevealOffset = -72;
+        const cartMaxDragOffset = -112;
+        const cartReleaseDeleteOffset = -96;
 
         const loadCart = () => {
-          try {
-            const savedCart = localStorage.getItem('cart');
-            if (savedCart) {
-              cart.value = JSON.parse(savedCart);
-            }
-          } catch (e) {
-            console.error('Failed to load cart:', e);
-          }
+          cart.value = AppUtils.cart.load();
         };
 
         const saveCart = () => {
-          localStorage.setItem('cart', JSON.stringify(cart.value));
-
-          if (typeof syncHeaderCartCount === 'function') {
-            syncHeaderCartCount();
-          }
+          AppUtils.cart.save(cart.value);
         };
 
         const removeUnavailableCartItems = () => {
@@ -143,11 +194,11 @@
         };
 
         const loadOrderNote = () => {
-          orderNote.value = localStorage.getItem('orderNote') || '';
+          orderNote.value = AppUtils.orderNote.load();
         };
 
         const saveOrderNote = () => {
-          localStorage.setItem('orderNote', orderNote.value);
+          AppUtils.orderNote.save(orderNote.value);
         };
 
         const cartIsEmpty = computed(() => {
@@ -164,25 +215,13 @@
             }
           } catch (e) {
             console.error('Error fetching menu:', e);
+          } finally {
+            cartChecking.value = false;
           }
         };
 
         const getItemImage = (itemId) => {
-          const images = {
-            'F001': '../../images/food/ayam_merah.png',
-            'F002': '../../images/food/ayam_hijau.png',
-            'F003': '../../images/food/brownsugar.png',
-            'F004': '../../images/food/harimau.png',
-            'F005': '../../images/food/bawean.png',
-            'F006': '../../images/food/2rasa.png',
-            'F007': '../../images/food/3rasa.png',
-            'D001': '../../images/drink/orange.png',
-            'D002': '../../images/drink/carrot.png',
-            'D003': '../../images/drink/carrot_susu.png',
-            'D004': '../../images/drink/tembikai.png',
-            'D005': '../../images/drink/tembikai_susu.png'
-          };
-          return images[itemId] || '../../images/food/test.png';
+          return AppUtils.images.item(itemId, '../../');
         };
 
         const increaseQty = (itemId) => {
@@ -192,6 +231,9 @@
           saveCart();
           if (typeof animateHeaderCartWiggle === 'function') {
             animateHeaderCartWiggle();
+          }
+          if (typeof showToast === 'function') {
+            showToast('Cart quantity updated.');
           }
         };
 
@@ -205,12 +247,102 @@
             if (typeof animateHeaderCartWiggle === 'function') {
             animateHeaderCartWiggle();
           }
+            if (typeof showToast === 'function') {
+              showToast('Cart quantity updated.');
+            }
           }
         };
 
         const removeItem = (itemId) => {
+          const quantity = cart.value[itemId] || 0;
+          if (!quantity) return;
+
           delete cart.value[itemId];
+          revealedCartItem.value = null;
+          deleteReadyCartItem.value = null;
+          delete dragOffsets.value[itemId];
           saveCart();
+          if (typeof showToast === 'function') {
+            showToast('Item removed from cart.');
+          }
+        };
+
+        const openClearCartConfirm = () => {
+          clearCartConfirmOpen.value = true;
+        };
+
+        const closeClearCartConfirm = () => {
+          clearCartConfirmOpen.value = false;
+        };
+
+        const confirmClearCart = () => {
+          cart.value = {};
+          revealedCartItem.value = null;
+          deleteReadyCartItem.value = null;
+          dragOffsets.value = {};
+          closeClearCartConfirm();
+          saveCart();
+          if (typeof showToast === 'function') {
+            showToast('Cart cleared.');
+          }
+        };
+
+        const getCartItemOffset = (itemId) => {
+          if (dragOffsets.value[itemId] !== undefined) {
+            return dragOffsets.value[itemId];
+          }
+          return revealedCartItem.value === itemId ? cartRevealOffset : 0;
+        };
+
+        const startCartItemDrag = (event, itemId) => {
+          if (event.target.closest('button, a, input, textarea, select')) return;
+
+          const wasRevealed = revealedCartItem.value === itemId;
+          revealedCartItem.value = wasRevealed ? itemId : null;
+          deleteReadyCartItem.value = null;
+          dragOffsets.value = wasRevealed ? { [itemId]: cartRevealOffset } : {};
+
+          dragState.value = {
+            itemId,
+            startX: event.clientX,
+            baseOffset: wasRevealed ? cartRevealOffset : 0
+          };
+          event.currentTarget.setPointerCapture?.(event.pointerId);
+        };
+
+        const moveCartItemDrag = (event) => {
+          if (!dragState.value) return;
+
+          const delta = event.clientX - dragState.value.startX;
+          const nextOffset = Math.max(cartMaxDragOffset, Math.min(0, dragState.value.baseOffset + delta));
+          const itemId = dragState.value.itemId;
+          dragOffsets.value = {
+            ...dragOffsets.value,
+            [itemId]: nextOffset
+          };
+          deleteReadyCartItem.value = nextOffset <= cartReleaseDeleteOffset ? itemId : null;
+        };
+
+        const endCartItemDrag = () => {
+          if (!dragState.value) return;
+
+          const itemId = dragState.value.itemId;
+          const offset = dragOffsets.value[itemId] || 0;
+          const shouldDelete = offset <= cartReleaseDeleteOffset;
+
+          dragState.value = null;
+          deleteReadyCartItem.value = null;
+
+          if (shouldDelete) {
+            removeItem(itemId);
+            return;
+          }
+
+          revealedCartItem.value = offset < -36 ? itemId : null;
+          dragOffsets.value = {
+            ...dragOffsets.value,
+            [itemId]: revealedCartItem.value === itemId ? cartRevealOffset : 0
+          };
         };
 
         const cartItemsList = computed(() => {
@@ -241,23 +373,39 @@
         });
 
         const cartCount = computed(() => {
-          return Object.values(cart.value).reduce((sum, qty) => sum + qty, 0);
+          return AppUtils.cart.count(cart.value);
         });
 
         onMounted(() => {
           loadCart();
           loadOrderNote();
-          fetchMenu();
+          if (Object.keys(cart.value).length) {
+            fetchMenu();
+          } else {
+            cartChecking.value = false;
+          }
         });
 
         return {
+          cartChecking,
           cartIsEmpty,
           cartItemsList,
           cartCount,
           cartTotal,
+          clearCartConfirmOpen,
+          closeClearCartConfirm,
+          confirmClearCart,
           increaseQty,
           decreaseQty,
+          openClearCartConfirm,
           removeItem,
+          revealedCartItem,
+          deleteReadyCartItem,
+          dragState,
+          getCartItemOffset,
+          startCartItemDrag,
+          moveCartItemDrag,
+          endCartItemDrag,
           getItemImage,
           orderNote,
           saveOrderNote

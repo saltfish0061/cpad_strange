@@ -1,0 +1,202 @@
+(function () {
+  const MENU_IMAGE_MAP = {
+    F001: 'images/food/ayam_merah.png',
+    F002: 'images/food/ayam_hijau.png',
+    F003: 'images/food/brownsugar.png',
+    F004: 'images/food/harimau.png',
+    F005: 'images/food/bawean.png',
+    F006: 'images/food/2rasa.png',
+    F007: 'images/food/3rasa.png',
+    D001: 'images/drink/orange.png',
+    D002: 'images/drink/carrot.png',
+    D003: 'images/drink/carrot_susu.png',
+    D004: 'images/drink/tembikai.png',
+    D005: 'images/drink/tembikai_susu.png',
+    D006: 'images/drink/apple.png'
+  };
+
+  const readJson = (key, fallback) => {
+    try {
+      const saved = localStorage.getItem(key);
+      return saved ? JSON.parse(saved) : fallback;
+    } catch (error) {
+      console.error(`Failed to read ${key}:`, error);
+      return fallback;
+    }
+  };
+
+  const writeJson = (key, value) => {
+    localStorage.setItem(key, JSON.stringify(value));
+  };
+
+  const cart = {
+    load() {
+      return readJson('cart', {});
+    },
+    save(nextCart) {
+      writeJson('cart', nextCart || {});
+      header.syncCartCount();
+    },
+    count(nextCart) {
+      return Object.values(nextCart || {}).reduce((sum, qty) => sum + Number(qty || 0), 0);
+    },
+    removeUnavailable(nextCart, menuItems) {
+      const availableIds = new Set(
+        (menuItems || [])
+          .filter((item) => Number(item.is_available))
+          .map((item) => item.item_id)
+      );
+      const cleaned = { ...(nextCart || {}) };
+      let changed = false;
+
+      Object.keys(cleaned).forEach((itemId) => {
+        if (!availableIds.has(itemId)) {
+          delete cleaned[itemId];
+          changed = true;
+        }
+      });
+
+      return { cart: cleaned, changed };
+    }
+  };
+
+  const session = {
+    loadUser() {
+      return readJson('currentUser', null);
+    },
+    saveUser(user) {
+      if (user) {
+        writeJson('currentUser', user);
+      } else {
+        localStorage.removeItem('currentUser');
+      }
+    },
+    clear() {
+      localStorage.removeItem('currentUser');
+      localStorage.removeItem('cart');
+      localStorage.removeItem('orderNote');
+    }
+  };
+
+  const orderNote = {
+    load() {
+      return localStorage.getItem('orderNote') || '';
+    },
+    save(note) {
+      localStorage.setItem('orderNote', note || '');
+    },
+    clear() {
+      localStorage.removeItem('orderNote');
+    }
+  };
+
+  const images = {
+    item(itemId, rootPath = '') {
+      return `${rootPath}${MENU_IMAGE_MAP[itemId] || 'images/food/test.png'}`;
+    }
+  };
+
+  let toastTimer = null;
+  let toastLeaveTimer = null;
+
+  const toast = {
+    show(message, type = 'success') {
+      if (!message) return;
+
+      let stack = document.querySelector('.toast-stack');
+      if (!stack) {
+        stack = document.createElement('div');
+        stack.className = 'toast-stack';
+        stack.setAttribute('aria-live', 'polite');
+        stack.setAttribute('aria-atomic', 'true');
+        document.body.appendChild(stack);
+      }
+
+      window.clearTimeout(toastTimer);
+      window.clearTimeout(toastLeaveTimer);
+
+      const toastEl = document.createElement('div');
+      toastEl.className = `toast-message ${type}`;
+
+      const iconEl = document.createElement('span');
+      iconEl.className = 'toast-icon';
+      iconEl.setAttribute('aria-hidden', 'true');
+
+      const copyEl = document.createElement('span');
+      copyEl.className = 'toast-copy';
+      copyEl.textContent = message;
+
+      toastEl.append(iconEl, copyEl);
+      stack.replaceChildren(toastEl);
+
+      toastTimer = window.setTimeout(() => {
+        toastEl.classList.add('leaving');
+        toastLeaveTimer = window.setTimeout(() => toastEl.remove(), 180);
+      }, 2600);
+    }
+  };
+
+  const header = {
+    syncCartCount() {
+      const countEls = document.querySelectorAll('.header-cart-count');
+      const count = cart.count(cart.load());
+      countEls.forEach((countEl) => {
+        countEl.innerText = count;
+      });
+    },
+    syncVendorLink() {
+      const currentUser = session.loadUser();
+      const isVendor = currentUser?.role === 'admin';
+
+      document.querySelectorAll('[data-vendor-link]').forEach((vendorLink) => {
+        vendorLink.hidden = !isVendor;
+      });
+
+      document.querySelectorAll('[data-profile-link]').forEach((profileLink) => {
+        profileLink.hidden = isVendor;
+      });
+    },
+    syncAuth() {
+      const loginLink = document.getElementById('header-login-link');
+      const logoutButtons = document.querySelectorAll('[data-logout-trigger]');
+      if (!loginLink) return;
+
+      const currentUser = session.loadUser();
+      loginLink.hidden = Boolean(currentUser);
+      logoutButtons.forEach((logoutButton) => {
+        logoutButton.hidden = !currentUser;
+      });
+    },
+    syncAll() {
+      header.syncCartCount();
+      header.syncVendorLink();
+      header.syncAuth();
+    },
+    animateCart() {
+      const cartButtons = document.querySelectorAll('.cart-button');
+      if (!cartButtons.length) return;
+
+      cartButtons.forEach((cartButton) => {
+        cartButton.classList.remove('cart-wiggle');
+        void cartButton.offsetWidth;
+        cartButton.classList.add('cart-wiggle');
+      });
+
+      window.setTimeout(() => {
+        cartButtons.forEach((cartButton) => {
+          cartButton.classList.remove('cart-wiggle');
+        });
+      }, 450);
+    }
+  };
+
+  window.AppUtils = {
+    storage: { readJson, writeJson },
+    cart,
+    session,
+    orderNote,
+    images,
+    toast,
+    header
+  };
+})();

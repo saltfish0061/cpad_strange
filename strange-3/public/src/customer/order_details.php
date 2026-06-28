@@ -3,9 +3,10 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Order Details - Universal Sambal</title>
-  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="../../js/vue.global.prod.js"></script>
+  <script src="../../js/app-utils.js"></script>
   <link rel="stylesheet" href="../../css/style.css">
 </head>
 
@@ -15,7 +16,7 @@
       <?php
         $root_path = "../../";
         $active_page = "orders";
-        include '../../includes/customer_header.php';
+        include '../../libs/customer_header.php';
       ?>
 
       <section class="page section">
@@ -25,9 +26,14 @@
           </a>
         </div>
 
-        <div v-if="loading" class="empty-panel">
-          <h1>Loading Details...</h1>
-          <p>Fetching order and delivery information...</p>
+        <div v-if="loading" class="loading-surface">
+          <div class="loading-card" role="status" aria-live="polite">
+            <span class="loading-spinner" aria-hidden="true"></span>
+            <strong>Loading</strong>
+          </div>
+          <div class="loading-skeleton-list" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
         </div>
 
         <div v-else-if="!currentOrder" class="empty-panel">
@@ -46,7 +52,7 @@
 
           <!-- Progress Tracker -->
           <div class="progress-tracker">
-            <div class="progress-line" :style="{ width: progressPercent + '%' }"></div>
+            <div class="progress-line" :style="{ width: progressPercent + '%', '--mobile-progress': progressPercent }"></div>
             <div 
               v-for="(step, idx) in trackerSteps" 
               :key="step.status"
@@ -127,9 +133,7 @@
         </div>
       </section>
 
-      <footer class="footer">
-        Universal Sambal Order Tracking.
-      </footer>
+      <?php include '../../libs/footer.php'; ?>
     </main>
   </div>
 
@@ -145,24 +149,11 @@
         const loading = ref(false);
 
         const loadCurrentUser = () => {
-          try {
-            const savedUser = localStorage.getItem('currentUser');
-            currentUser.value = savedUser ? JSON.parse(savedUser) : null;
-          } catch (e) {
-            currentUser.value = null;
-          }
+          currentUser.value = AppUtils.session.loadUser();
         };
 
         const loadCartCount = () => {
-          try {
-            const savedCart = localStorage.getItem('cart');
-            if (savedCart) {
-              const cart = JSON.parse(savedCart);
-              cartCount.value = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
-            }
-          } catch (e) {
-            console.error('Failed to load cart:', e);
-          }
+          cartCount.value = AppUtils.cart.count(AppUtils.cart.load());
         };
 
         const formatDeliveryMethod = (method) => {

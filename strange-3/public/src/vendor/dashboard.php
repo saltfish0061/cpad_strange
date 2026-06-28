@@ -3,9 +3,10 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Vendor Dashboard - Universal Sambal</title>
-  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="../../js/vue.global.prod.js"></script>
+  <script src="../../js/app-utils.js"></script>
   <link rel="stylesheet" href="../../css/style.css">
 </head>
 
@@ -15,7 +16,7 @@
           <?php
             $root_path = '../../';
             $active_page = 'vendor';
-            include '../../includes/customer_header.php';
+            include '../../libs/customer_header.php';
           ?>
 
           <section class="page vendor-command">
@@ -25,9 +26,21 @@
                 <h2>Vendor Command Center</h2>
               </div>
               <div class="vendor-head-actions">
+                <a class="apk-page-shortcut" href="../customer/profile.php" aria-label="Open profile">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="8" r="4"></circle>
+                    <path d="M4 21a8 8 0 0 1 16 0"></path>
+                  </svg>
+                  <span>Profile</span>
+                </a>
                 <span class="vendor-live-pill">{{ pendingOrders.length }} active orders</span>
-                <button class="vendor-refresh" type="button" @click="loadVendorData">
-                  {{ vendorLoading ? 'Refreshing...' : 'Refresh Data' }}
+                <button class="vendor-refresh" type="button" @click="loadVendorData" :disabled="vendorLoading" :aria-label="vendorLoading ? 'Refreshing data' : 'Refresh data'" :title="vendorLoading ? 'Refreshing...' : 'Refresh data'">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M20 6v5h-5"></path>
+                    <path d="M4 18v-5h5"></path>
+                    <path d="M18.4 9A7 7 0 0 0 6.2 6.8L4 9"></path>
+                    <path d="M5.6 15A7 7 0 0 0 17.8 17.2L20 15"></path>
+                  </svg>
                 </button>
               </div>
             </div>
@@ -44,7 +57,7 @@
                 </button>
                 <button class="vendor-tab" :class="{ active: vendorTab === 'menu' }" type="button" @click="vendorTab = 'menu'">
                   <span class="vendor-tab-label">Menu Items</span>
-                  <span class="vendor-tab-note">{{ availableCount }} available</span>
+                  <span class="vendor-tab-note">{{ availableCount }} on stock</span>
                 </button>
                 <button class="vendor-tab" :class="{ active: vendorTab === 'sales' }" type="button" @click="vendorTab = 'sales'">
                   <span class="vendor-tab-label">Sales Records</span>
@@ -55,7 +68,22 @@
               <div class="vendor-main">
                 <p v-if="vendorMessage" class="vendor-alert">{{ vendorMessage }}</p>
 
-                <div v-if="vendorTab === 'dashboard'">
+                <div v-if="showVendorInitialLoading" class="loading-surface">
+                  <div class="loading-card" role="status" aria-live="polite">
+                    <span class="loading-spinner" aria-hidden="true"></span>
+                    <strong>Loading</strong>
+                  </div>
+                  <div class="loading-skeleton-grid" aria-hidden="true">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
+                </div>
+
+                <div v-else-if="vendorTab === 'dashboard'">
                   <div class="vendor-grid">
                     <article class="metric-card hot">
                       <span>Open orders</span>
@@ -139,7 +167,7 @@
                   </div>
                 </div>
 
-                <div v-if="vendorTab === 'orders'">
+                <div v-else-if="vendorTab === 'orders'">
                   <div v-if="selectedOrder" class="order-detail">
                     <h3>Order {{ selectedOrder.order_id }} - {{ selectedOrder.customer_name }}</h3>
                     <p class="muted-text">
@@ -163,8 +191,38 @@
                     <div class="vendor-panel-head">
                       <div>
                         <h2>Order Dashboard</h2>
-                        <span class="vendor-panel-subtitle">{{ vendorOrders.length }} total orders</span>
+                        <span class="vendor-panel-subtitle">{{ filteredVendorOrders.length }} of {{ vendorOrders.length }} orders</span>
                       </div>
+                      <button class="vendor-filter-toggle" :class="{ active: orderFiltersOpen }" type="button" @click="orderFiltersOpen = !orderFiltersOpen" aria-label="Order filters" title="Filter and sort orders">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                          <path d="M4 7h16"></path>
+                          <path d="M7 12h10"></path>
+                          <path d="M10 17h4"></path>
+                        </svg>
+                      </button>
+                    </div>
+                    <div v-if="orderFiltersOpen" class="vendor-filter-bar">
+                      <label>
+                        Status
+                        <select class="vendor-select" v-model="orderStatusFilter">
+                          <option value="all">All orders</option>
+                          <option value="pending">Pending</option>
+                          <option value="preparing">Preparing</option>
+                          <option value="ready">Ready</option>
+                          <option value="on_the_way">On the way</option>
+                          <option value="completed">Completed</option>
+                          <option value="cancelled">Cancelled</option>
+                        </select>
+                      </label>
+                      <label>
+                        Sort
+                        <select class="vendor-select" v-model="orderSort">
+                          <option value="newest">Newest first</option>
+                          <option value="oldest">Oldest first</option>
+                          <option value="highest">Highest total</option>
+                          <option value="lowest">Lowest total</option>
+                        </select>
+                      </label>
                     </div>
                     <table class="vendor-table">
                       <thead>
@@ -180,7 +238,7 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <tr v-for="order in vendorOrders" :key="order.order_id">
+                        <tr v-for="order in filteredVendorOrders" :key="order.order_id">
                           <td><button class="small-action" type="button" @click="viewOrder(order)">{{ order.order_id }}</button></td>
                           <td>{{ order.customer_name }}</td>
                           <td>{{ order.customer_phone }}</td>
@@ -201,14 +259,23 @@
                   </div>
                 </div>
 
-                <div v-if="vendorTab === 'menu'">
+                <div v-else-if="vendorTab === 'menu'">
                   <div class="vendor-panel">
                     <div class="vendor-panel-head">
                       <div>
                         <h2>{{ editingItemId ? 'Update Menu Item' : 'Add Menu Item' }}</h2>
-                        <span class="vendor-panel-subtitle">{{ availableCount }} available - {{ soldOutCount }} sold out</span>
+                        <span class="vendor-panel-subtitle">{{ availableCount }} on stock - {{ soldOutCount }} sold out</span>
                       </div>
-                      <button v-if="editingItemId" class="small-action" type="button" @click="resetMenuForm">Cancel Edit</button>
+                      <div class="inline-actions">
+                        <button class="vendor-filter-toggle" :class="{ active: menuFiltersOpen }" type="button" @click="menuFiltersOpen = !menuFiltersOpen" aria-label="Menu filters" title="Filter and sort menu items">
+                          <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M4 7h16"></path>
+                            <path d="M7 12h10"></path>
+                            <path d="M10 17h4"></path>
+                          </svg>
+                        </button>
+                        <button v-if="editingItemId" class="small-action" type="button" @click="resetMenuForm">Cancel Edit</button>
+                      </div>
                     </div>
                     <form class="vendor-form" @submit.prevent="saveMenuItem">
                       <label>Name<input class="vendor-input" v-model="menuForm.name" required></label>
@@ -226,20 +293,46 @@
                         <button class="small-action" type="button" @click="resetMenuForm">Clear</button>
                       </div>
                     </form>
-                    <table class="vendor-table">
+                    <div v-if="menuFiltersOpen" class="vendor-filter-bar">
+                      <label>
+                        Stock
+                        <select class="vendor-select" v-model="menuStockFilter">
+                          <option value="all">All stock</option>
+                          <option value="available">On stock</option>
+                          <option value="sold-out">Sold out</option>
+                        </select>
+                      </label>
+                      <label>
+                        Category
+                        <select class="vendor-select" v-model="menuCategoryFilter">
+                          <option value="all">All categories</option>
+                          <option value="food">Food</option>
+                          <option value="drink">Drink</option>
+                        </select>
+                      </label>
+                      <label>
+                        Sort
+                        <select class="vendor-select" v-model="menuSort">
+                          <option value="name">Name A-Z</option>
+                          <option value="price-high">Price high-low</option>
+                          <option value="price-low">Price low-high</option>
+                        </select>
+                      </label>
+                    </div>
+                    <table class="vendor-table menu-items-table">
                       <thead>
                         <tr><th>Item</th><th>Category</th><th>Price</th><th>Availability</th><th>Actions</th></tr>
                       </thead>
                       <tbody>
-                        <tr v-for="item in vendorMenu" :key="item.item_id">
+                        <tr v-for="item in filteredVendorMenu" :key="item.item_id">
                           <td><strong>{{ item.name }}</strong><div class="muted-text">{{ item.item_id }}</div></td>
                           <td>{{ item.category }}</td>
                           <td>{{ formatMoney(item.price) }}</td>
-                          <td><span class="status-pill" :class="Number(item.is_available) ? 'available' : 'sold-out'">{{ Number(item.is_available) ? 'available' : 'sold out' }}</span></td>
+                          <td><span class="status-pill" :class="Number(item.is_available) ? 'available' : 'sold-out'">{{ Number(item.is_available) ? 'on stock' : 'sold out' }}</span></td>
                           <td>
                             <div class="inline-actions">
                               <button class="small-action" type="button" @click="editMenuItem(item)">Edit</button>
-                              <button class="small-action" type="button" @click="toggleAvailability(item)">{{ Number(item.is_available) ? 'Sold Out' : 'Available' }}</button>
+                              <button class="small-action" type="button" @click="toggleAvailability(item)">{{ Number(item.is_available) ? 'Sold Out' : 'On Stock' }}</button>
                               <button class="danger-action" type="button" @click="deleteMenuItem(item)">Delete</button>
                             </div>
                           </td>
@@ -249,7 +342,7 @@
                   </div>
                 </div>
 
-                <div v-if="vendorTab === 'sales'">
+                <div v-else-if="vendorTab === 'sales'">
                   <div class="vendor-grid">
                     <article class="metric-card green">
                       <span>Completed orders</span>
@@ -285,7 +378,7 @@
             </div>
           </section>
 
-          <footer class="footer">Universal Sambal Vendor Module.</footer>
+          <?php include '../../libs/footer.php'; ?>
         </main>
   </div>
 
@@ -312,6 +405,7 @@
         const savedVendorTab = localStorage.getItem('vendorTab');
         const vendorTab = ref(['dashboard', 'orders', 'menu', 'sales'].includes(savedVendorTab) ? savedVendorTab : 'dashboard');
         const vendorLoading = ref(false);
+        const vendorLoaded = ref(false);
         const vendorMessage = ref('');
         const vendorMenu = ref([]);
         const vendorOrders = ref([]);
@@ -320,6 +414,13 @@
           popular_items: [],
           status_counts: []
         });
+        const orderStatusFilter = ref(localStorage.getItem('vendorOrderStatusFilter') || 'all');
+        const orderSort = ref(localStorage.getItem('vendorOrderSort') || 'newest');
+        const menuStockFilter = ref(localStorage.getItem('vendorMenuStockFilter') || 'all');
+        const menuCategoryFilter = ref(localStorage.getItem('vendorMenuCategoryFilter') || 'all');
+        const menuSort = ref(localStorage.getItem('vendorMenuSort') || 'name');
+        const orderFiltersOpen = ref(false);
+        const menuFiltersOpen = ref(false);
         const selectedOrder = ref(null);
         const selectedOrderItems = ref([]);
         const editingItemId = ref('');
@@ -351,8 +452,11 @@
           'cancelled'
         ];
 
-        const setVendorMessage = (message) => {
+        const setVendorMessage = (message, type = 'success') => {
           vendorMessage.value = message;
+          if (typeof showToast === 'function') {
+            showToast(message, type);
+          }
           if (message) {
             window.setTimeout(() => {
               if (vendorMessage.value === message) vendorMessage.value = '';
@@ -394,8 +498,9 @@
           try {
             await Promise.all([loadVendorMenu(), loadVendorOrders(), loadVendorSales()]);
           } catch (error) {
-            setVendorMessage(error.message || 'Could not load vendor data.');
+            setVendorMessage(error.message || 'Could not load vendor data.', 'error');
           } finally {
+            vendorLoaded.value = true;
             vendorLoading.value = false;
           }
         };
@@ -444,7 +549,7 @@
             resetMenuForm();
             await Promise.all([loadVendorMenu(), loadVendorSales()]);
           } catch (error) {
-            setVendorMessage(error.message);
+            setVendorMessage(error.message, 'error');
           }
         };
 
@@ -455,8 +560,9 @@
               body: JSON.stringify({ is_available: !Number(item.is_available) })
             });
             await loadVendorMenu();
+            setVendorMessage(Number(item.is_available) ? 'Item marked sold out.' : 'Item marked on stock.');
           } catch (error) {
-            setVendorMessage(error.message);
+            setVendorMessage(error.message, 'error');
           }
         };
 
@@ -467,7 +573,7 @@
             setVendorMessage('Menu item deleted.');
             await loadVendorMenu();
           } catch (error) {
-            setVendorMessage(error.message);
+            setVendorMessage(error.message, 'error');
           }
         };
 
@@ -478,7 +584,7 @@
             selectedOrderItems.value = data.items || [];
             vendorTab.value = 'orders';
           } catch (error) {
-            setVendorMessage(error.message);
+            setVendorMessage(error.message, 'error');
           }
         };
 
@@ -494,11 +600,40 @@
               selectedOrder.value.status = status;
             }
           } catch (error) {
-            setVendorMessage(error.message);
+            setVendorMessage(error.message, 'error');
           }
         };
 
         const pendingOrders = computed(() => vendorOrders.value.filter((order) => order.status !== 'completed' && order.status !== 'cancelled'));
+        const filteredVendorOrders = computed(() => {
+          const filtered = vendorOrders.value.filter((order) => {
+            return orderStatusFilter.value === 'all' || order.status === orderStatusFilter.value;
+          });
+
+          return [...filtered].sort((a, b) => {
+            if (orderSort.value === 'oldest') return String(a.order_id).localeCompare(String(b.order_id));
+            if (orderSort.value === 'highest') return Number(b.total_amount || 0) - Number(a.total_amount || 0);
+            if (orderSort.value === 'lowest') return Number(a.total_amount || 0) - Number(b.total_amount || 0);
+            return String(b.order_id).localeCompare(String(a.order_id));
+          });
+        });
+        const filteredVendorMenu = computed(() => {
+          const filtered = vendorMenu.value.filter((item) => {
+            const stockMatches =
+              menuStockFilter.value === 'all' ||
+              (menuStockFilter.value === 'available' && Number(item.is_available)) ||
+              (menuStockFilter.value === 'sold-out' && !Number(item.is_available));
+            const categoryMatches = menuCategoryFilter.value === 'all' || item.category === menuCategoryFilter.value;
+            return stockMatches && categoryMatches;
+          });
+
+          return [...filtered].sort((a, b) => {
+            if (menuSort.value === 'price-high') return Number(b.price || 0) - Number(a.price || 0);
+            if (menuSort.value === 'price-low') return Number(a.price || 0) - Number(b.price || 0);
+            return String(a.name || '').localeCompare(String(b.name || ''));
+          });
+        });
+        const showVendorInitialLoading = computed(() => vendorLoading.value && !vendorLoaded.value);
         const availableCount = computed(() => vendorMenu.value.filter((item) => Number(item.is_available)).length);
         const soldOutCount = computed(() => vendorMenu.value.filter((item) => !Number(item.is_available)).length);
         const orderCountByStatus = (status) => vendorOrders.value.filter((order) => order.status === status).length;
@@ -511,6 +646,11 @@
         watch(vendorTab, (tab) => {
           localStorage.setItem('vendorTab', tab);
         });
+        watch(orderStatusFilter, (value) => localStorage.setItem('vendorOrderStatusFilter', value));
+        watch(orderSort, (value) => localStorage.setItem('vendorOrderSort', value));
+        watch(menuStockFilter, (value) => localStorage.setItem('vendorMenuStockFilter', value));
+        watch(menuCategoryFilter, (value) => localStorage.setItem('vendorMenuCategoryFilter', value));
+        watch(menuSort, (value) => localStorage.setItem('vendorMenuSort', value));
 
         onMounted(() => {
           if (canAccessVendor) loadVendorData();
@@ -521,18 +661,28 @@
           deleteMenuItem,
           editMenuItem,
           editingItemId,
+          filteredVendorMenu,
+          filteredVendorOrders,
           formatDeliveryMethod,
           formatMoney,
           formatOrderStatus,
           loadVendorData,
+          menuCategoryFilter,
           menuForm,
+          menuSort,
+          menuStockFilter,
+          menuFiltersOpen,
           orderCountByStatus,
+          orderFiltersOpen,
+          orderSort,
+          orderStatusFilter,
           pendingOrders,
           popularBarWidth,
           resetMenuForm,
           saveMenuItem,
           selectedOrder,
           selectedOrderItems,
+          showVendorInitialLoading,
           soldOutCount,
           statusOptionsForOrder,
           toggleAvailability,
