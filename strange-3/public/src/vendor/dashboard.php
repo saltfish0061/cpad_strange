@@ -171,7 +171,7 @@
                   <div v-if="selectedOrder" class="order-detail">
                     <h3>Order {{ selectedOrder.order_id }} - {{ selectedOrder.customer_name }}</h3>
                     <p class="muted-text">
-                      {{ selectedOrder.customer_phone }} - {{ formatDeliveryMethod(selectedOrder.delivery_method) }} - {{ formatMoney(selectedOrder.total_amount) }}
+                      {{ selectedOrder.customer_phone }} - {{ formatDeliveryMethod(selectedOrder.delivery_method) }} - {{ formatPaymentMethod(selectedOrder.payment_method) }} - {{ formatMoney(selectedOrder.total_amount) }}
                     </p>
                     <p v-if="selectedOrder.customer_address" class="muted-text">
                       <strong>Address:</strong> {{ selectedOrder.customer_address }}
@@ -231,6 +231,7 @@
                           <th>Customer</th>
                           <th>Phone</th>
                           <th>Method</th>
+                          <th>Payment</th>
                           <th>Items</th>
                           <th>Total</th>
                           <th>Status</th>
@@ -243,6 +244,7 @@
                           <td>{{ order.customer_name }}</td>
                           <td>{{ order.customer_phone }}</td>
                           <td>{{ formatDeliveryMethod(order.delivery_method) }}</td>
+                          <td>{{ formatPaymentMethod(order.payment_method) }}</td>
                           <td>{{ order.item_count }}</td>
                           <td>{{ formatMoney(order.total_amount) }}</td>
                           <td><span class="status-pill" :class="order.status">{{ formatOrderStatus(order.status) }}</span></td>
@@ -433,6 +435,14 @@
 
         const formatMoney = (value) => `RM ${Number(value || 0).toFixed(2)}`;
         const formatDeliveryMethod = (method) => method === 'delivery' ? 'Delivery' : 'Pickup';
+        const formatPaymentMethod = (method) => {
+          const labels = {
+            cash: 'Cash on Delivery',
+            credit_card: 'Card Payment',
+            ewallet: 'DuitNow QR'
+          };
+          return labels[method] || method || '-';
+        };
         const formatOrderStatus = (status) => {
           const labels = {
             pending: 'Pending',
@@ -664,6 +674,7 @@
           filteredVendorMenu,
           filteredVendorOrders,
           formatDeliveryMethod,
+          formatPaymentMethod,
           formatMoney,
           formatOrderStatus,
           loadVendorData,

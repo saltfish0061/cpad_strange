@@ -31,26 +31,26 @@ INSERT INTO `users` (`user_id`, `name`, `password`, `role`, `phone`, `address`) 
 ON DUPLICATE KEY UPDATE `name`=VALUES(`name`), `phone`=VALUES(`phone`), `address`=VALUES(`address`);
 
 -- Insert into orders
-INSERT INTO `orders` (`order_id`, `user_id`, `total_amount`, `status`, `order_date`) VALUES 
-('O001','C001',11.20,'completed','2026-05-13 12:25:30'),
-('O002','C002',17.10,'completed','2026-05-13 12:25:30'),
-('O003','C003',22.40,'completed','2026-05-13 12:25:30'),
-('O004','C004',16.10,'completed','2026-05-13 12:25:30'),
-('O005','C005',16.60,'completed','2026-05-13 12:25:30'),
-('O006','C006',17.60,'completed','2026-05-13 12:25:30'),
-('O007','C007',18.60,'completed','2026-05-13 12:25:30'),
-('O008','C001',22.40,'completed','2026-05-13 12:25:30'),
-('O009','C002',23.00,'pending','2026-05-13 12:25:30'),
-('O010','C003',32.20,'pending','2026-05-13 12:25:30'),
-('O011','C004',11.20,'pending','2026-05-13 12:25:30'),
-('O012','C005',28.80,'pending','2026-05-13 12:25:30'),
-('O013','C006',24.00,'pending','2026-05-13 12:25:30'),
-('O014','C007',19.20,'pending','2026-05-13 12:25:30'),
-('O015','C001',22.00,'pending','2026-05-13 12:25:30'),
-('O016','C002',22.40,'pending','2026-05-13 12:25:30'),
-('O017','C006',18.10,'pending','2026-05-13 12:25:30'),
-('O018','C007',24.40,'pending','2026-05-13 12:25:30')
-ON DUPLICATE KEY UPDATE `status`=VALUES(`status`);
+INSERT INTO `orders` (`order_id`, `user_id`, `total_amount`, `status`, `delivery_method`, `payment_method`, `order_date`) VALUES 
+('O001','C001',11.20,'completed','pickup','cash','2026-05-13 12:25:30'),
+('O002','C002',17.10,'completed','delivery','credit_card','2026-05-13 12:25:30'),
+('O003','C003',22.40,'completed','pickup','ewallet','2026-05-13 12:25:30'),
+('O004','C004',16.10,'completed','delivery','cash','2026-05-13 12:25:30'),
+('O005','C005',16.60,'completed','pickup','credit_card','2026-05-13 12:25:30'),
+('O006','C006',17.60,'completed','delivery','ewallet','2026-05-13 12:25:30'),
+('O007','C007',18.60,'completed','pickup','cash','2026-05-13 12:25:30'),
+('O008','C001',22.40,'completed','delivery','credit_card','2026-05-13 12:25:30'),
+('O009','C002',23.00,'pending','pickup','ewallet','2026-05-13 12:25:30'),
+('O010','C003',32.20,'pending','delivery','cash','2026-05-13 12:25:30'),
+('O011','C004',11.20,'pending','pickup','credit_card','2026-05-13 12:25:30'),
+('O012','C005',28.80,'pending','delivery','ewallet','2026-05-13 12:25:30'),
+('O013','C006',24.00,'pending','pickup','cash','2026-05-13 12:25:30'),
+('O014','C007',19.20,'pending','delivery','credit_card','2026-05-13 12:25:30'),
+('O015','C001',22.00,'pending','pickup','ewallet','2026-05-13 12:25:30'),
+('O016','C002',22.40,'pending','delivery','cash','2026-05-13 12:25:30'),
+('O017','C006',18.10,'pending','pickup','credit_card','2026-05-13 12:25:30'),
+('O018','C007',24.40,'pending','delivery','ewallet','2026-05-13 12:25:30')
+ON DUPLICATE KEY UPDATE `status`=VALUES(`status`), `delivery_method`=VALUES(`delivery_method`), `payment_method`=VALUES(`payment_method`);
 
 -- Insert into order_items
 INSERT INTO `order_items` VALUES 

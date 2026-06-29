@@ -101,6 +101,7 @@
             <div class="cart-summary-card">
               <h3>Delivery / Pickup Info</h3>
               <p><strong>Method:</strong> {{ formatDeliveryMethod(currentOrder.delivery_method) }}</p>
+              <p><strong>Payment:</strong> {{ formatPaymentMethod(currentOrder.payment_method) }}</p>
               <p><strong>Name:</strong> {{ currentUser?.name || currentOrder.user_id }}</p>
               <p><strong>Phone:</strong> {{ currentUser?.phone || '-' }}</p>
               <p><strong>Address:</strong> {{ currentUser?.address || '-' }}</p>
@@ -158,6 +159,15 @@
 
         const formatDeliveryMethod = (method) => {
           return method === 'delivery' ? 'Delivery' : 'Self-Pickup';
+        };
+
+        const formatPaymentMethod = (method) => {
+          const labels = {
+            cash: 'Cash on Delivery',
+            credit_card: 'Card Payment',
+            ewallet: 'DuitNow QR'
+          };
+          return labels[method] || method || '-';
         };
 
         const formatOrderStatus = (status) => {
@@ -249,6 +259,7 @@
           currentOrder,
           currentOrderItems,
           formatDeliveryMethod,
+          formatPaymentMethod,
           formatOrderStatus,
           handoffStatus,
           loading,
