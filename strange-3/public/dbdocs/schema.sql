@@ -10,15 +10,15 @@ CREATE TABLE IF NOT EXISTS `menus` (
   PRIMARY KEY (`item_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-CREATE TABLE IF NOT EXISTS `users` (
-  `user_id` varchar(20) NOT NULL,
-  `name` varchar(50) NOT NULL,
-  `password` varchar(255) DEFAULT NULL,
-  `role` enum('admin','customer') NOT NULL DEFAULT 'customer',
-  `phone` varchar(20) DEFAULT NULL,
-  `address` text DEFAULT NULL,
-  PRIMARY KEY (`user_id`),
-  UNIQUE KEY `users_name_unique` (`name`)
+CREATE TABLE IF NOT EXISTS `users` ( 
+  `user_id` varchar(20) NOT NULL, 
+  `name` varchar(50) NOT NULL, 
+  `password` varchar(255) NOT NULL DEFAULT 'temporary_default_password',
+  `role` enum('admin','customer') NOT NULL DEFAULT 'customer', 
+  `phone` varchar(20) DEFAULT NULL, 
+  `address` text DEFAULT NULL, 
+  PRIMARY KEY (`user_id`), 
+  UNIQUE KEY `users_name_unique` (`name`) 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE IF NOT EXISTS `orders` (
@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS `orders` (
   `total_amount` decimal(10,2) NOT NULL,
   `status` enum('pending','preparing','ready','on_the_way','completed','cancelled') DEFAULT 'pending',
   `delivery_method` enum('pickup','delivery') NOT NULL DEFAULT 'pickup',
+  `payment_method` enum('cash','credit_card','ewallet') NOT NULL DEFAULT 'cash',
   `order_note` text DEFAULT NULL,
   `order_date` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`order_id`),

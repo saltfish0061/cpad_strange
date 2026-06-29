@@ -13,3 +13,15 @@ Instructions for Team Members:
   ```bash
   mysqldump --user=cpad --password cpad_03_strange > strange-3/public/dbdocs/cpad_03_Strange.sql
   ```
+
+SQL syntax to drop all tables:
+```sql
+SET FOREIGN_KEY_CHECKS = 0;
+
+DROP TABLE IF EXISTS `order_items`;
+DROP TABLE IF EXISTS `orders`;
+DROP TABLE IF EXISTS `users`;
+DROP TABLE IF EXISTS `menus`;
+
+SET FOREIGN_KEY_CHECKS = 1;
+```
