@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS `menus` (
 CREATE TABLE IF NOT EXISTS `users` (
   `user_id` varchar(20) NOT NULL,
   `name` varchar(50) NOT NULL,
-  `password varchar(255) NOT NULL DEFAULT 'temporary_default_password`,
+  `password varchar(255)` NOT NULL DEFAULT 'temporary_default_password',
   `role` enum('admin','customer') NOT NULL DEFAULT 'customer',
   `phone` varchar(20) DEFAULT NULL,
   `address` text DEFAULT NULL,
