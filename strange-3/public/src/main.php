@@ -499,9 +499,14 @@ $app->post('/api/orders', function (Request $request, Response $response) use ($
         $user_id = trim((string) ($body['user_id'] ?? ''));
         $order_note = trim((string) ($body['order_note'] ?? ''));
         $delivery_method = strtolower(trim((string) ($body['delivery_method'] ?? 'pickup')));
+        $payment_method = strtolower(trim((string) ($body['payment_method'] ?? 'cash')));
 
         if (!in_array($delivery_method, ['pickup', 'delivery'], true)) {
             $delivery_method = 'pickup';
+        }
+
+        if (!in_array($payment_method, ['cash', 'credit_card', 'ewallet'], true)) {
+            $payment_method = 'cash';
         }
 
         if (empty($items)) {
@@ -551,8 +556,8 @@ $app->post('/api/orders', function (Request $request, Response $response) use ($
         $last_id = $stmt->fetchColumn();
         $order_id = $last_id ? sprintf("O%03d", (int)substr($last_id, 1) + 1) : "O001";
 
-        $stmt = $db_conn->prepare("INSERT INTO orders (order_id, user_id, total_amount, status, delivery_method, order_note) VALUES (?, ?, ?, 'pending', ?, ?)");
-        $stmt->execute([$order_id, $user_id, $total_amount, $delivery_method, $order_note]);
+        $stmt = $db_conn->prepare("INSERT INTO orders (order_id, user_id, total_amount, status, delivery_method, payment_method, order_note) VALUES (?, ?, ?, 'pending', ?, ?, ?)");
+        $stmt->execute([$order_id, $user_id, $total_amount, $delivery_method, $payment_method, $order_note]);
 
         $stmt = $db_conn->query("SELECT order_item_id FROM order_items WHERE order_item_id LIKE 'OI%' ORDER BY CAST(SUBSTRING(order_item_id, 3) AS UNSIGNED) DESC LIMIT 1");
         $last_oi_id = $stmt->fetchColumn();
@@ -725,12 +730,12 @@ $app->get('/api/vendor/orders', function (Request $request, Response $response) 
     try {
         $stmt = $db_conn->query(
             "SELECT o.order_id, o.user_id, u.name AS customer_name, u.phone AS customer_phone,
-                    o.total_amount, o.status, o.delivery_method, o.order_note, o.order_date,
+                    o.total_amount, o.status, o.delivery_method, o.payment_method, o.order_note, o.order_date,
                     COUNT(oi.order_item_id) AS item_count
              FROM orders o
              JOIN users u ON u.user_id = o.user_id
              LEFT JOIN order_items oi ON oi.order_id = o.order_id
-             GROUP BY o.order_id, o.user_id, u.name, u.phone, o.total_amount, o.status, o.delivery_method, o.order_note, o.order_date
+             GROUP BY o.order_id, o.user_id, u.name, u.phone, o.total_amount, o.status, o.delivery_method, o.payment_method, o.order_note, o.order_date
              ORDER BY o.order_date DESC, o.order_id DESC"
         );
 
@@ -750,7 +755,7 @@ $app->get('/api/vendor/orders/{order_id}', function (Request $request, Response 
     try {
         $orderStmt = $db_conn->prepare(
             "SELECT o.order_id, o.user_id, u.name AS customer_name, u.phone AS customer_phone,
-                    u.address AS customer_address, o.total_amount, o.status, o.delivery_method,
+                    u.address AS customer_address, o.total_amount, o.status, o.delivery_method, o.payment_method,
                     o.order_note, o.order_date
              FROM orders o
              JOIN users u ON u.user_id = o.user_id

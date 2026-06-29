@@ -68,6 +68,7 @@
               <p style="font-weight: 800; color: var(--green-900); margin-top: 8px;">
                 Total: RM {{ parseFloat(order.total_amount).toFixed(2) }}
               </p>
+              <p>Payment: {{ formatPaymentMethod(order.payment_method) }}</p>
             </div>
             <div style="display: flex; align-items: center; gap: 20px;">
               <span class="status-badge" :class="order.status">{{ formatOrderStatus(order.status) }}</span>
@@ -139,6 +140,15 @@
           return labels[status] || status;
         };
 
+        const formatPaymentMethod = (method) => {
+          const labels = {
+            cash: 'Cash on Delivery',
+            credit_card: 'Card Payment',
+            ewallet: 'DuitNow QR'
+          };
+          return labels[method] || method || '-';
+        };
+
         onMounted(() => {
           loadCurrentUser();
           loadCartCount();
@@ -149,6 +159,7 @@
           cartCount,
           currentUser,
           filteredOrders,
+          formatPaymentMethod,
           formatOrderStatus,
           loading,
           orderTab

@@ -87,6 +87,7 @@ CREATE TABLE `orders` (
   `total_amount` decimal(10,2) NOT NULL,
   `status` enum('pending','preparing','ready','on_the_way','completed','cancelled') DEFAULT 'pending',
   `delivery_method` enum('pickup','delivery') NOT NULL DEFAULT 'pickup',
+  `payment_method` enum('cash','credit_card','ewallet') NOT NULL DEFAULT 'cash',
   `order_note` text DEFAULT NULL,
   `order_date` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`order_id`),
@@ -101,7 +102,7 @@ CREATE TABLE `orders` (
 
 LOCK TABLES `orders` WRITE;
 /*!40000 ALTER TABLE `orders` DISABLE KEYS */;
-INSERT INTO `orders` VALUES ('O001','C001',11.20,'completed','pickup',NULL,'2026-05-13 04:25:30'),('O002','C002',17.10,'completed','pickup',NULL,'2026-05-13 04:25:30'),('O003','C003',22.40,'completed','pickup',NULL,'2026-05-13 04:25:30'),('O004','C004',16.10,'completed','pickup',NULL,'2026-05-13 04:25:30'),('O005','C005',16.60,'completed','pickup',NULL,'2026-05-13 04:25:30'),('O006','C006',17.60,'completed','pickup',NULL,'2026-05-13 04:25:30'),('O007','C007',18.60,'completed','pickup',NULL,'2026-05-13 04:25:30'),('O008','C001',22.40,'completed','pickup',NULL,'2026-05-13 04:25:30'),('O009','C002',23.00,'pending','pickup',NULL,'2026-05-13 04:25:30'),('O010','C003',32.20,'pending','pickup',NULL,'2026-05-13 04:25:30'),('O011','C004',11.20,'pending','pickup',NULL,'2026-05-13 04:25:30'),('O012','C005',28.80,'pending','pickup',NULL,'2026-05-13 04:25:30'),('O013','C006',24.00,'pending','pickup',NULL,'2026-05-13 04:25:30'),('O014','C007',19.20,'pending','pickup',NULL,'2026-05-13 04:25:30'),('O015','C001',22.00,'pending','pickup',NULL,'2026-05-13 04:25:30'),('O016','C002',22.40,'pending','pickup',NULL,'2026-05-13 04:25:30'),('O017','C006',18.10,'pending','pickup',NULL,'2026-05-13 04:25:30'),('O018','C007',24.40,'pending','pickup',NULL,'2026-05-13 04:25:30'),('O019','C001',17.60,'pending','delivery','','2026-06-20 11:36:27');
+INSERT INTO `orders` VALUES ('O001','C001',11.20,'completed','pickup','cash',NULL,'2026-05-13 04:25:30'),('O002','C002',17.10,'completed','delivery','credit_card',NULL,'2026-05-13 04:25:30'),('O003','C003',22.40,'completed','pickup','ewallet',NULL,'2026-05-13 04:25:30'),('O004','C004',16.10,'completed','delivery','cash',NULL,'2026-05-13 04:25:30'),('O005','C005',16.60,'completed','pickup','credit_card',NULL,'2026-05-13 04:25:30'),('O006','C006',17.60,'completed','delivery','ewallet',NULL,'2026-05-13 04:25:30'),('O007','C007',18.60,'completed','pickup','cash',NULL,'2026-05-13 04:25:30'),('O008','C001',22.40,'completed','delivery','credit_card',NULL,'2026-05-13 04:25:30'),('O009','C002',23.00,'pending','pickup','ewallet',NULL,'2026-05-13 04:25:30'),('O010','C003',32.20,'pending','delivery','cash',NULL,'2026-05-13 04:25:30'),('O011','C004',11.20,'pending','pickup','credit_card',NULL,'2026-05-13 04:25:30'),('O012','C005',28.80,'pending','delivery','ewallet',NULL,'2026-05-13 04:25:30'),('O013','C006',24.00,'pending','pickup','cash',NULL,'2026-05-13 04:25:30'),('O014','C007',19.20,'pending','delivery','credit_card',NULL,'2026-05-13 04:25:30'),('O015','C001',22.00,'pending','pickup','ewallet',NULL,'2026-05-13 04:25:30'),('O016','C002',22.40,'pending','delivery','cash',NULL,'2026-05-13 04:25:30'),('O017','C006',18.10,'pending','pickup','credit_card',NULL,'2026-05-13 04:25:30'),('O018','C007',24.40,'pending','delivery','ewallet',NULL,'2026-05-13 04:25:30'),('O019','C001',17.60,'pending','delivery','cash','','2026-06-20 11:36:27');
 /*!40000 ALTER TABLE `orders` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -115,7 +116,7 @@ DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `user_id` varchar(20) NOT NULL,
   `name` varchar(50) NOT NULL,
-  `password` varchar(255) DEFAULT NULL,
+  `password` varchar(255) NOT NULL DEFAULT 'temporary_default_password',
   `role` enum('admin','customer') NOT NULL DEFAULT 'customer',
   `phone` varchar(20) DEFAULT NULL,
   `address` text DEFAULT NULL,

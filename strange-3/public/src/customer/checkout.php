@@ -79,24 +79,24 @@
                 <div class="payment-methods">
                   <div 
                     class="payment-method-card"
-                    :class="{ active: checkoutForm.paymentMethod === 'cod' }"
-                    @click="checkoutForm.paymentMethod = 'cod'"
+                    :class="{ active: checkoutForm.paymentMethod === 'cash' }"
+                    @click="checkoutForm.paymentMethod = 'cash'"
                   >
                     <img src="../../images/assets/checkout/payment/dollar.png" alt="Cash">
                     <span class="payment-option-label">Cash on Delivery</span>
                   </div>
                   <div 
                     class="payment-method-card"
-                    :class="{ active: checkoutForm.paymentMethod === 'card' }"
-                    @click="checkoutForm.paymentMethod = 'card'"
+                    :class="{ active: checkoutForm.paymentMethod === 'credit_card' }"
+                    @click="checkoutForm.paymentMethod = 'credit_card'"
                   >
                     <img src="../../images/assets/checkout/payment/card.png" alt="Card">
                     <span class="payment-option-label">Card Payment</span>
                   </div>
                   <div 
                     class="payment-method-card"
-                    :class="{ active: checkoutForm.paymentMethod === 'qr' }"
-                    @click="checkoutForm.paymentMethod = 'qr'"
+                    :class="{ active: checkoutForm.paymentMethod === 'ewallet' }"
+                    @click="checkoutForm.paymentMethod = 'ewallet'"
                   >
                     <img src="../../images/assets/checkout/payment/qr icon.png" alt="Qr">
                     <span class="payment-option-label">DuitNow QR</span>
@@ -114,6 +114,14 @@
             <div v-for="item in cartItemsList" :key="item.item_id" class="summary-row" style="font-size: 14px;">
               <span>{{ item.name }} x{{ item.quantity }}</span>
               <span>RM {{ item.subtotal.toFixed(2) }}</span>
+            </div>
+            <div class="summary-row">
+              <span>Delivery Method</span>
+              <span>{{ formatDeliveryMethod(checkoutForm.deliveryMethod) }}</span>
+            </div>
+            <div class="summary-row">
+              <span>Payment Method</span>
+              <span>{{ formatPaymentMethod(checkoutForm.paymentMethod) }}</span>
             </div>
             <div class="summary-row total">
               <span>Grand Total</span>
@@ -141,7 +149,7 @@
           address: '',
           orderNote: '',
           deliveryMethod: 'pickup',
-          paymentMethod: 'cod'
+          paymentMethod: 'cash'
         });
         const submitting = ref(false);
 
@@ -242,6 +250,17 @@
           return cartItemsList.value.reduce((sum, item) => sum + item.subtotal, 0);
         });
 
+        const formatDeliveryMethod = (method) => method === 'delivery' ? 'Delivery' : 'Pickup';
+
+        const formatPaymentMethod = (method) => {
+          const labels = {
+            cash: 'Cash on Delivery',
+            credit_card: 'Card Payment',
+            ewallet: 'DuitNow QR'
+          };
+          return labels[method] || method || '-';
+        };
+
         const submitOrder = async () => {
           if (!currentUser.value?.user_id) {
             if (typeof showToast === 'function') showToast('Please login before placing an order.', 'error');
@@ -284,7 +303,8 @@
                 user_id: currentUser.value.user_id,
                 items: cart.value,
                 order_note: checkoutForm.value.orderNote,
-                delivery_method: checkoutForm.value.deliveryMethod
+                delivery_method: checkoutForm.value.deliveryMethod,
+                payment_method: checkoutForm.value.paymentMethod
               })
             });
             const data = await res.json();
@@ -316,6 +336,8 @@
           cartItemsList,
           cartTotal,
           checkoutForm,
+          formatDeliveryMethod,
+          formatPaymentMethod,
           saveOrderNote,
           submitOrder,
           submitting
